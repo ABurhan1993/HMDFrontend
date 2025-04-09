@@ -1,23 +1,29 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 function App() {
+  const [forecast, setForecast] = useState([]);
+  
+  useEffect(() => {
+    axios.get("https://mhdbackend.onrender.com/weatherforecast")  // عوّض الرابط هنا بالـ Backend
+      .then((response) => {
+        setForecast(response.data);
+      })
+      .catch((error) => {
+        console.error("There was an error fetching the data!", error);
+      });
+  }, []);
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <h1>Weather Forecast</h1>
+      <ul>
+        {forecast.map((item, index) => (
+          <li key={index}>
+            {item.date}: {item.temperatureC}°C, {item.summary}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
