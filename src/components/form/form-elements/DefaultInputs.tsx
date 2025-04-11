@@ -4,7 +4,7 @@ import Label from "../Label";
 import Input from "../input/InputField";
 import Select from "../Select";
 import { EyeCloseIcon, EyeIcon, TimeIcon } from "../../../icons";
-import DatePicker from "../date-picker";
+import DatePicker from "../date-picker.tsx";
 
 export default function DefaultInputs() {
   const [showPassword, setShowPassword] = useState(false);
@@ -62,7 +62,8 @@ export default function DefaultInputs() {
             id="date-picker"
             label="Date Picker Input"
             placeholder="Select a date"
-            onChange={(dates: any, currentDateString: string) => {
+            onChange={(dates, currentDateString) => {
+              // Handle your logic
               console.log({ dates, currentDateString });
             }}
           />
@@ -75,7 +76,7 @@ export default function DefaultInputs() {
               type="time"
               id="tm"
               name="tm"
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => console.log(e.target.value)}
+              onChange={(e) => console.log(e.target.value)}
             />
             <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
               <TimeIcon className="size-6" />
@@ -100,7 +101,7 @@ export default function DefaultInputs() {
               >
                 <circle cx="6.25" cy="10" r="5.625" fill="#E80B26" />
                 <circle cx="13.75" cy="10" r="5.625" fill="#F59D31" />
-                <svg
+                <path
                   d="M10 14.1924C11.1508 13.1625 11.875 11.6657 11.875 9.99979C11.875 8.33383 11.1508 6.8371 10 5.80713C8.84918 6.8371 8.125 8.33383 8.125 9.99979C8.125 11.6657 8.84918 13.1625 10 14.1924Z"
                   fill="#FC6020"
                 />
