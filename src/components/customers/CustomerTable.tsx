@@ -14,7 +14,7 @@ interface CustomerTableProps {
 
 export default function CustomerTable({ onAddClick, onEditClick, refreshFlag }: CustomerTableProps) {
   const [customers, setCustomers] = useState<CustomerData[]>([]);
-  const [filter, setFilter] = useState("All");
+  const [filter] = useState("All");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;

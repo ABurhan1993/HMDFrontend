@@ -1,7 +1,6 @@
 import { useState } from "react";
 import AddCustomerForm from "../../components/customers/AddCustomerForm";
 import EditCustomerForm from "../../components/customers/EditCustomerForm"; // ✅
-import Button from "../../components/ui/button/Button";
 import CustomerTable from "@/components/customers/CustomerTable";
 import type { CustomerData } from "@/types/customer";
 
