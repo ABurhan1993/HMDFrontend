@@ -5,7 +5,9 @@ import App from "./App";
 import { ThemeProvider } from "./context/ThemeContext";
 import { SidebarProvider } from "./context/SidebarContext";
 //import reportWebVitals from "./reportWebVitals";
-import { HelmetProvider } from "react-helmet-async"; // ✅ اضفناها
+import { HelmetProvider } from "react-helmet-async"; 
+import 'tw-elements';
+// ✅ اضفناها
 
 const root = ReactDOM.createRoot(document.getElementById("root")!);
 

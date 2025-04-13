@@ -1,15 +1,13 @@
-// src/components/common/PrivateRoute.tsx
-import { Navigate } from "react-router-dom";
-import  { ReactNode } from "react";
+import { Navigate, Outlet } from "react-router-dom";
 
-interface Props {
-  children: ReactNode;
-}
+const PrivateRoute = () => {
+  const token = localStorage.getItem("token");
 
-const PrivateRoute = ({ children }: Props) => {
-  const isAuthenticated = !!localStorage.getItem("token");
+  if (!token) {
+    return <Navigate to="/signin" replace />;
+  }
 
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+  return <Outlet />;
 };
 
 export default PrivateRoute;
