@@ -101,7 +101,10 @@ const EditCustomerForm = ({ isOpen, onClose, onSuccess, editingCustomer }: Props
             </div>
             <div className="grid md:grid-cols-2 md:gap-6">
               <Select
-                options={userOptions}
+                options={userOptions.map((u: any) => ({
+                    value: u.id,
+                    label: u.fullName,
+                  }))}
                 placeholder="Assigned To"
                 onChange={(value) => setFormData((prev) => prev ? { ...prev, customerAssignedTo: value } : null)}
                 defaultValue={formData.customerAssignedTo}
