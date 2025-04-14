@@ -126,12 +126,15 @@ const AddCustomerForm = ({ isOpen, onClose, onSuccess }: AddCustomerFormProps) =
 
             {/* التاريخ فقط */}
             <div className="grid md:grid-cols-2 md:gap-6">
-              <Select
-                options={userOptions}
-                placeholder="Assigned To"
-                onChange={(value) => setFormData({ ...formData, customerAssignedTo: value })}
-                defaultValue={formData.customerAssignedTo}
-              />
+            <Select
+  options={userOptions.map((u: any) => ({
+    value: u.id,
+    label: u.fullName,
+  }))}
+  placeholder="Assigned To"
+  onChange={(value) => setFormData({ ...formData, customerAssignedTo: value })}
+  defaultValue={formData.customerAssignedTo}
+/>
               <DatePicker
                 id="customerNextMeetingDate"
                 placeholder="Next Meeting Date"
