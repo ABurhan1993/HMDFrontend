@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
+import axios from "../utils/axios";
 
 interface EventItem {
   title: string;
@@ -12,42 +13,88 @@ interface EventItem {
 
 const DashboardCalendar = () => {
   const [events, setEvents] = useState<EventItem[]>([]);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   useEffect(() => {
-    // مؤقتاً بيانات وهمية لتجربة التقويم
-    setEvents([
-      {
-        title: "📞 Need to Contact – Ahmad",
-        date: "2025-04-14",
-        backgroundColor: "#ef4444", // أحمر
-        textColor: "#fff",
-      },
-      {
-        title: "✅ Follow-Up Done – Sarah",
-        date: "2025-04-14",
-        backgroundColor: "#10b981", // أخضر
-        textColor: "#fff",
-      },
-      {
-        title: "🟡 Customer Need to Follow Up",
-        date: "2025-04-16",
-        backgroundColor: "#facc15", // أصفر
-        textColor: "#000",
-      },
-    ]);
+    const fetchEvents = async () => {
+      try {
+        const response = await axios.get("/Customer/calendar-events");
+        setEvents(response.data);
+      } catch (error) {
+        console.error("Error fetching calendar events:", error);
+      }
+    };
+
+    fetchEvents();
   }, []);
 
+  const eventsForSelectedDate = selectedDate
+    ? events.filter((e) => e.date === selectedDate)
+    : [];
+
   return (
-    <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6 shadow-md">
-      <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">
+    <div className="relative bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm transition-all duration-300">
+      <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
         Customer Follow-Up Calendar
       </h2>
-      <FullCalendar
-        plugins={[dayGridPlugin, interactionPlugin]}
-        initialView="dayGridMonth"
-        events={events}
-        height="auto"
-      />
+
+      <div className="calendar-wrapper text-sm text-gray-700 dark:text-gray-200">
+        <FullCalendar
+          plugins={[dayGridPlugin, interactionPlugin]}
+          initialView="dayGridMonth"
+          events={events}
+          height="auto"
+          headerToolbar={{
+            left: "prev,next today",
+            center: "title",
+            right: "",
+          }}
+          dayMaxEventRows={3}
+          eventDisplay="block"
+          dateClick={(info) => {
+            setSelectedDate(info.dateStr);
+          }}
+        />
+      </div>
+
+      {selectedDate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/30">
+          <div className="bg-white dark:bg-gray-800 border dark:border-gray-600 p-6 rounded-2xl shadow-2xl w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                📅 Events on {selectedDate}
+              </h3>
+              <button
+                onClick={() => setSelectedDate(null)}
+                className="text-red-500 hover:text-red-700 text-sm"
+              >
+                Close ✖
+              </button>
+            </div>
+
+            {eventsForSelectedDate.length > 0 ? (
+              <ul className="space-y-3">
+                {eventsForSelectedDate.map((event, idx) => (
+                  <li
+                    key={idx}
+                    className="p-3 rounded-lg text-sm"
+                    style={{
+                      backgroundColor: event.backgroundColor || "#f3f4f6",
+                      color: event.textColor || "#000",
+                    }}
+                  >
+                    {event.title}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-gray-500 dark:text-gray-300">
+                No events found for this date.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

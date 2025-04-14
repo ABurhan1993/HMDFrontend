@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { GridIcon, ChevronDownIcon, HorizontaLDots, UserCircleIcon } from "../icons";
+import {
+  GridIcon,
+  ChevronDownIcon,
+  HorizontaLDots,
+  UserCircleIcon,
+  PlugInIcon,
+} from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import hmdLogo from "@/assets/hmd-pdf.png";
 
@@ -8,14 +14,23 @@ const navItems = [
   {
     icon: <GridIcon />,
     name: "Dashboard",
-    subItems: [{ name: "Ecommerce", path: "/", pro: false }],
+    subItems: [{ name: "Dashboard Home", path: "/", pro: false }],
   },
   {
     icon: <UserCircleIcon />,
     name: "Customers",
     subItems: [{ name: "Customers", path: "/customers", pro: false }],
   },
+  {
+    icon: <PlugInIcon />,
+    name: "Settings",
+    subItems: [
+      { name: "User List", path: "/users", pro: false },
+      { name: "Role List", path: "/roles", pro: false }, // صفحة لاحقًا
+    ],
+  },
 ];
+
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
