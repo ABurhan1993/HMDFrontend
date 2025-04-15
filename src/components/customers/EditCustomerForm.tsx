@@ -3,32 +3,28 @@ import Input from "../form/input/InputField";
 import TextArea from "../form/input/TextArea";
 import Select from "../form/Select";
 import Button from "../ui/button/Button";
-import axios from "../utils/axios";
 import DatePicker from "../form/date-picker";
 import type { CustomerData } from "@/types/customer";
+import type { UserDto } from "@/types/UserDto";
+import axios from "@/components/utils/axios";
+
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
   editingCustomer: CustomerData | null;
+  users: UserDto[];
 }
 
-const EditCustomerForm = ({ isOpen, onClose, onSuccess, editingCustomer }: Props) => {
+const EditCustomerForm = ({ isOpen, onClose, onSuccess, editingCustomer, users }: Props) => {
   const [formData, setFormData] = useState<CustomerData | null>(null);
-  const [userOptions, setUserOptions] = useState([]);
 
   useEffect(() => {
     if (editingCustomer) {
       setFormData(editingCustomer);
     }
   }, [editingCustomer]);
-
-  useEffect(() => {
-    axios.get("/user/all-users").then((res) => {
-      setUserOptions(res.data);
-    });
-  }, []);
 
   const handleChange = (
     e:
@@ -101,47 +97,27 @@ const EditCustomerForm = ({ isOpen, onClose, onSuccess, editingCustomer }: Props
             </div>
             <div className="grid md:grid-cols-2 md:gap-6">
               <Select
-                options={userOptions.map((u: any) => ({
-                    value: u.id,
-                    label: u.fullName,
-                  }))}
+                options={users.map((u) => ({ value: u.id, label: u.fullName }))}
                 placeholder="Assigned To"
                 onChange={(value) => setFormData((prev) => prev ? { ...prev, customerAssignedTo: value } : null)}
                 defaultValue={formData.customerAssignedTo}
               />
               <DatePicker
-              id="customerNextMeetingDate"
-              placeholder="Next Meeting Date"
-              onChange={handleDateChange}
-              defaultDate={formData.customerNextMeetingDate || undefined}/>
-
-
-
+                id="customerNextMeetingDate"
+                placeholder="Next Meeting Date"
+                onChange={handleDateChange}
+                defaultDate={formData.customerNextMeetingDate || undefined}
+              />
             </div>
             <div className="grid md:grid-cols-2 md:gap-6">
               <Select
-                options={[
-                  { value: "1", label: "Phone" },
-                  { value: "2", label: "WhatsApp" },
-                  { value: "3", label: "Email" },
-                  { value: "4", label: "Facebook" },
-                  { value: "5", label: "Instagram" },
-                  { value: "6", label: "Google" },
-                  { value: "7", label: "Twitter" },
-                  { value: "8", label: "Walk In" },
-                  { value: "9", label: "Friend Recommendation" },
-                ]}
+                options={[{ value: "1", label: "Phone" }, { value: "2", label: "WhatsApp" }, { value: "3", label: "Email" }, { value: "4", label: "Facebook" }, { value: "5", label: "Instagram" }, { value: "6", label: "Google" }, { value: "7", label: "Twitter" }, { value: "8", label: "Walk In" }, { value: "9", label: "Friend Recommendation" }]}
                 placeholder="Way of Contact"
                 onChange={(value) => setFormData((prev) => prev ? { ...prev, wayOfContact: value } : null)}
                 defaultValue={formData.wayOfContact}
               />
               <Select
-                options={[
-                  { value: "1", label: "Contacted" },
-                  { value: "2", label: "Need to Contact" },
-                  { value: "3", label: "Need to Follow Up" },
-                  { value: "4", label: "Not Responding" },
-                ]}
+                options={[{ value: "1", label: "Contacted" }, { value: "2", label: "Need to Contact" }, { value: "3", label: "Need to Follow Up" }, { value: "4", label: "Not Responding" }]}
                 placeholder="Contact Status"
                 onChange={(value) => setFormData((prev) => prev ? { ...prev, contactStatus: value } : null)}
                 defaultValue={formData.contactStatus}

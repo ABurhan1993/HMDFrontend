@@ -14,7 +14,9 @@ export interface CustomerData {
     isVisitedShowroom: boolean;
     customerTimeSpent: number;
     wayOfContact: string;
+    wayOfContactName:string;
     contactStatus: string;
+    contactStatusName:string;
     customerAssignedTo: string;
     branchName:string;
   }

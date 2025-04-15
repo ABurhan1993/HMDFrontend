@@ -3,13 +3,15 @@ import Input from "../form/input/InputField";
 import TextArea from "../form/input/TextArea";
 import Select from "../form/Select";
 import Button from "../ui/button/Button";
-import axios from "../utils/axios";
 import DatePicker from "../form/date-picker";
+import type { UserDto } from "@/types/UserDto";
+import axios from "@/components/utils/axios";
 
 interface AddCustomerFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  users: UserDto[]; // ✅ استُخدمت بدلاً من الاستدعاء المحلي
 }
 
 const initialFormState = {
@@ -31,15 +33,8 @@ const initialFormState = {
   initialComment: "",
 };
 
-const AddCustomerForm = ({ isOpen, onClose, onSuccess }: AddCustomerFormProps) => {
+const AddCustomerForm = ({ isOpen, onClose, onSuccess, users }: AddCustomerFormProps) => {
   const [formData, setFormData] = useState({ ...initialFormState });
-  const [userOptions, setUserOptions] = useState([]);
-
-  useEffect(() => {
-    axios.get("/user/all-users").then((res) => {
-      setUserOptions(res.data);
-    });
-  }, []);
 
   const handleChange = (
     e:
@@ -99,68 +94,52 @@ const AddCustomerForm = ({ isOpen, onClose, onSuccess }: AddCustomerFormProps) =
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
-
-            {/* الاسم والإيميل */}
             <div className="grid md:grid-cols-2 md:gap-6">
               <Input name="customerName" value={formData.customerName} onChange={handleChange} placeholder="Customer Name" />
               <Input type="email" name="customerEmail" value={formData.customerEmail} onChange={handleChange} placeholder="Email" />
             </div>
-
-            {/* الهاتف والواتساب */}
             <div className="grid md:grid-cols-2 md:gap-6">
               <Input name="customerContact" value={formData.customerContact} onChange={handleChange} placeholder="Phone" />
               <Input name="customerWhatsapp" value={formData.customerWhatsapp} onChange={handleChange} placeholder="WhatsApp" />
             </div>
-
-            {/* العنوان والمدينة */}
             <div className="grid md:grid-cols-2 md:gap-6">
               <Input name="customerAddress" value={formData.customerAddress} onChange={handleChange} placeholder="Address" />
               <Input name="customerCity" value={formData.customerCity} onChange={handleChange} placeholder="City" />
             </div>
-
-            {/* الدولة والجنسية */}
             <div className="grid md:grid-cols-2 md:gap-6">
               <Input name="customerCountry" value={formData.customerCountry} onChange={handleChange} placeholder="Country" />
               <Input name="customerNationality" value={formData.customerNationality} onChange={handleChange} placeholder="Nationality" />
             </div>
-
-            {/* التاريخ فقط */}
             <div className="grid md:grid-cols-2 md:gap-6">
-            <Select
-  options={userOptions.map((u: any) => ({
-    value: u.id,
-    label: u.fullName,
-  }))}
-  placeholder="Assigned To"
-  onChange={(value) => setFormData({ ...formData, customerAssignedTo: value })}
-  defaultValue={formData.customerAssignedTo}
-/>
+              <Select
+                options={users.map((u) => ({ value: u.id, label: u.fullName }))}
+                placeholder="Assigned To"
+                onChange={(value) => setFormData({ ...formData, customerAssignedTo: value })}
+                defaultValue={formData.customerAssignedTo}
+              />
               <DatePicker
                 id="customerNextMeetingDate"
                 placeholder="Next Meeting Date"
                 onChange={handleDateChange}
               />
             </div>
-
-            {/* وسيلة التواصل + حالة التواصل */}
             <div className="grid md:grid-cols-2 md:gap-6">
               <Select
-  options={[
-    { value: "1", label: "Phone" },
-    { value: "2", label: "WhatsApp" },
-    { value: "3", label: "Email" },
-    { value: "4", label: "Facebook" },
-    { value: "5", label: "Instagram" },
-    { value: "6", label: "Google" },
-    { value: "7", label: "Twitter" },
-    { value: "8", label: "Walk In" },
-    { value: "9", label: "Friend Recommendation" },
-  ]}
-  placeholder="Way of Contact"
-  onChange={(value) => setFormData({ ...formData, wayOfContact: value })}
-  defaultValue={formData.wayOfContact}
-/>
-
+                options={[
+                  { value: "1", label: "Phone" },
+                  { value: "2", label: "WhatsApp" },
+                  { value: "3", label: "Email" },
+                  { value: "4", label: "Facebook" },
+                  { value: "5", label: "Instagram" },
+                  { value: "6", label: "Google" },
+                  { value: "7", label: "Twitter" },
+                  { value: "8", label: "Walk In" },
+                  { value: "9", label: "Friend Recommendation" },
+                ]}
+                placeholder="Way of Contact"
+                onChange={(value) => setFormData({ ...formData, wayOfContact: value })}
+                defaultValue={formData.wayOfContact}
+              />
               <Select
                 options={[
                   { value: "1", label: "Contacted" },
@@ -173,8 +152,6 @@ const AddCustomerForm = ({ isOpen, onClose, onSuccess }: AddCustomerFormProps) =
                 defaultValue={formData.contactStatus}
               />
             </div>
-
-            {/* زر التبديل + وقت الزيارة */}
             <div>
               <label className="inline-flex items-center cursor-pointer">
                 <input
@@ -194,7 +171,6 @@ const AddCustomerForm = ({ isOpen, onClose, onSuccess }: AddCustomerFormProps) =
                   Visited Showroom?
                 </span>
               </label>
-
               {formData.isVisitedShowroom && (
                 <div className="mt-3">
                   <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">
@@ -242,15 +218,11 @@ const AddCustomerForm = ({ isOpen, onClose, onSuccess }: AddCustomerFormProps) =
                 </div>
               )}
             </div>
-
-            {/* ملاحظات */}
             <TextArea
               placeholder="Notes"
               value={formData.customerNotes}
               onChange={(val) => setFormData({ ...formData, customerNotes: val })}
             />
-
-            {/* زر الإرسال */}
             <Button className="w-full" size="sm">Save Customer</Button>
           </form>
         </div>

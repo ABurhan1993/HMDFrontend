@@ -1,7 +1,4 @@
-// ✅ هذا هو CustomerTable بعد دمج زر الحذف مع المودال
-
-import { useEffect, useState } from "react";
-import axios from "@/components/utils/axios";
+import { useState } from "react";
 import { CustomPagination } from "@/components/ui/Pagination/CustomPagination";
 import Button from "@/components/ui/button/Button";
 import {
@@ -11,15 +8,21 @@ import {
 } from "@heroicons/react/24/outline";
 import { useUser } from "@/hooks/useUser";
 import type { CustomerData } from "@/types/customer";
+import axios from "@/components/utils/axios";
 
 interface CustomerTableProps {
+  customers: CustomerData[];
   onAddClick: () => void;
   onEditClick: (customer: CustomerData) => void;
-  refreshFlag: boolean;
+  filterStatus?: string | null;
 }
 
-export default function CustomerTable({ onAddClick, onEditClick, refreshFlag }: CustomerTableProps) {
-  const [customers, setCustomers] = useState<CustomerData[]>([]);
+export default function CustomerTable({
+  customers,
+  onAddClick,
+  onEditClick,
+  filterStatus,
+}: CustomerTableProps) {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -27,15 +30,36 @@ export default function CustomerTable({ onAddClick, onEditClick, refreshFlag }: 
   const itemsPerPage = 5;
   const user = useUser();
 
-  useEffect(() => {
-    axios.get("/customer/all").then((res) => setCustomers(res.data));
-  }, [refreshFlag]);
-
   const filtered = customers.filter((c) => {
     const matchSearch =
       c.customerName.toLowerCase().includes(search.toLowerCase()) ||
       c.customerContact.includes(search);
-    return matchSearch;
+
+    const today = new Date();
+    let isToday = false;
+    let isDelayed = false;
+
+    if (c.customerNextMeetingDate) {
+      const parsedDate = new Date(c.customerNextMeetingDate);
+      if (!isNaN(parsedDate.getTime())) {
+        isDelayed = parsedDate < today;
+        isToday = parsedDate.toDateString() === today.toDateString();
+      }
+    }
+
+    const matchStatus =
+      filterStatus === "all" ||
+      (!filterStatus && true) ||
+      (filterStatus === "NeedToContact" && c.contactStatusName === "NeedToContact" && !isDelayed && !isToday) ||
+      (filterStatus === "NeedToFollowUp" && c.contactStatusName === "NeedToFollowUp" && !isDelayed && !isToday) ||
+      (filterStatus === "NotResponding" && c.contactStatusName === "NotResponding") ||
+      (filterStatus === "Contacted" && c.contactStatusName === "Contacted") ||
+      (filterStatus === "NeedToContactDelayed" && c.contactStatusName === "NeedToContact" && isDelayed) ||
+      (filterStatus === "NeedToFollowUpDelayed" && c.contactStatusName === "NeedToFollowUp" && isDelayed) ||
+      (filterStatus === "NeedToContactToday" && c.contactStatusName === "NeedToContact" && isToday) ||
+      (filterStatus === "NeedToFollowUpToday" && c.contactStatusName === "NeedToFollowUp" && isToday);
+
+    return matchSearch && matchStatus;
   });
 
   const paginated = filtered.slice(
@@ -47,9 +71,8 @@ export default function CustomerTable({ onAddClick, onEditClick, refreshFlag }: 
     if (!customerToDelete) return;
     try {
       await axios.delete(`/customer/delete?id=${customerToDelete.customerId}`);
-      setCustomers((prev) => prev.filter(c => c.customerId !== customerToDelete.customerId));
       setShowDeleteModal(false);
-    } catch (err) {
+    } catch {
       alert("Failed to delete customer");
     }
   };
@@ -61,8 +84,8 @@ export default function CustomerTable({ onAddClick, onEditClick, refreshFlag }: 
 
         <div className="relative">
           <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-            <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-              <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+            <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 20 20">
+              <path stroke="currentColor" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
             </svg>
           </div>
           <input
@@ -82,6 +105,7 @@ export default function CustomerTable({ onAddClick, onEditClick, refreshFlag }: 
             <th className="px-6 py-3">Contact</th>
             <th className="px-6 py-3">Way of Contact</th>
             <th className="px-6 py-3">Status</th>
+            <th className="px-6 py-3">Next Meeting</th>
             <th className="px-6 py-3">Branch</th>
             <th className="px-6 py-3">Action</th>
           </tr>
@@ -91,8 +115,14 @@ export default function CustomerTable({ onAddClick, onEditClick, refreshFlag }: 
             <tr key={c.customerId} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
               <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{c.customerName}</td>
               <td className="px-6 py-4">{c.customerContact}</td>
-              <td className="px-6 py-4">{c.wayOfContact}</td>
-              <td className="px-6 py-4">{c.contactStatus}</td>
+              <td className="px-6 py-4">{c.wayOfContactName}</td>
+              <td className="px-6 py-4">{c.contactStatusName}</td>
+              <td className="px-6 py-4">
+  {c.customerNextMeetingDate
+    ? new Date(c.customerNextMeetingDate).toISOString().split("T")[0]
+    : "-"}
+</td>
+
               <td className="px-6 py-4">{c.branchName ?? "-"}</td>
               <td className="px-6 py-4">
                 <div className="flex items-center gap-2">
@@ -101,22 +131,16 @@ export default function CustomerTable({ onAddClick, onEditClick, refreshFlag }: 
                       <PencilIcon className="w-5 h-5" />
                     </button>
                   )}
-
                   {user?.permissions.includes("Permissions.CustomerComments.Create") && (
                     <button className="text-blue-500 hover:text-blue-600" title="Add Comment">
                       <ChatBubbleLeftEllipsisIcon className="w-5 h-5" />
                     </button>
                   )}
-
                   {user?.role?.toLowerCase() === "admin" && (
-                    <button
-                      className="text-red-500 hover:text-red-600"
-                      title="Delete"
-                      onClick={() => {
-                        setCustomerToDelete(c);
-                        setShowDeleteModal(true);
-                      }}
-                    >
+                    <button className="text-red-500 hover:text-red-600" title="Delete" onClick={() => {
+                      setCustomerToDelete(c);
+                      setShowDeleteModal(true);
+                    }}>
                       <TrashIcon className="w-5 h-5" />
                     </button>
                   )}
@@ -135,7 +159,6 @@ export default function CustomerTable({ onAddClick, onEditClick, refreshFlag }: 
         />
       </div>
 
-      {/* Delete Confirmation Modal */}
       {showDeleteModal && customerToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-lg max-w-md w-full">
