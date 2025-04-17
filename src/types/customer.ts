@@ -14,10 +14,24 @@ export interface CustomerData {
     isVisitedShowroom: boolean;
     customerTimeSpent: number;
     wayOfContact: string;
-    wayOfContactName:string;
+    wayOfContactName: string;
     contactStatus: string;
-    contactStatusName:string;
+    contactStatusName: string;
     customerAssignedTo: string;
-    branchName:string;
+    customerAssignedToName: string;
+    branchName: string;
+    branchId?: number;
+    userId?: string;
+    managedByName?: string;
+    customerAssignedBy?: string;
+    customerAssignedByName?: string;
+    customerAssignedDate?: string;
+    isEscalationRequested?: boolean;
+    escalationRequestedBy?: string;
+    escalationRequestedByName?: string;
+    escalationRequestedOn?: string;
+    escalatedBy?: string;
+    escalatedByUserName?: string;
+    escalatedOn?: string;
   }
   

@@ -15,9 +15,14 @@ const CustomerList = () => {
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
   const [allCustomers, setAllCustomers] = useState<CustomerData[]>([]);
 
-  useEffect(() => {
+  const fetchCustomers = () => {
     axios.get("/customer/all").then((res) => setAllCustomers(res.data));
+  };
+  
+  useEffect(() => {
+    fetchCustomers();
   }, [refreshFlag]);
+  
 
   const [users, setUsers] = useState<UserDto[]>([]);
 useEffect(() => {
@@ -50,6 +55,7 @@ useEffect(() => {
         }}
         onEditClick={handleEditClick}
         filterStatus={filterStatus}
+        onRefresh={fetchCustomers}
       />
 
       {/* ✅ Add Form */}

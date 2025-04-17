@@ -5,16 +5,20 @@ import {
   TrashIcon,
   PencilIcon,
   ChatBubbleLeftEllipsisIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 import { useUser } from "@/hooks/useUser";
 import type { CustomerData } from "@/types/customer";
 import axios from "@/components/utils/axios";
+import AddCommentModal from "./AddCommentModat";
 
 interface CustomerTableProps {
   customers: CustomerData[];
   onAddClick: () => void;
   onEditClick: (customer: CustomerData) => void;
   filterStatus?: string | null;
+  onRefresh: () => void;
 }
 
 export default function CustomerTable({
@@ -22,13 +26,19 @@ export default function CustomerTable({
   onAddClick,
   onEditClick,
   filterStatus,
+  onRefresh,
 }: CustomerTableProps) {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [customerToDelete, setCustomerToDelete] = useState<CustomerData | null>(null);
+  const [showCommentModal, setShowCommentModal] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerData | null>(null);
+  const [expandedRow, setExpandedRow] = useState<number | null>(null);
   const itemsPerPage = 5;
   const user = useUser();
+  
+  
 
   const filtered = customers.filter((c) => {
     const matchSearch =
@@ -72,81 +82,115 @@ export default function CustomerTable({
     try {
       await axios.delete(`/customer/delete?id=${customerToDelete.customerId}`);
       setShowDeleteModal(false);
+      setCustomerToDelete(null);
+      onRefresh(); // ✅ هون بنعمل الريفريش
     } catch {
       alert("Failed to delete customer");
     }
   };
+  
+  
 
   return (
     <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
       <div className="flex items-center justify-between flex-wrap md:flex-row space-y-4 md:space-y-0 pb-4 bg-white dark:bg-gray-900">
         <Button onClick={onAddClick} size="sm">New Customer</Button>
-
-        <div className="relative">
-          <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-            <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 20 20">
-              <path stroke="currentColor" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
-            </svg>
-          </div>
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            placeholder="Search customers"
-          />
-        </div>
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="block p-2 px-4 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          placeholder="Search customers"
+        />
       </div>
 
       <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
         <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <tr>
+            <th className="px-6 py-3">#</th>
             <th className="px-6 py-3">Name</th>
             <th className="px-6 py-3">Contact</th>
-            <th className="px-6 py-3">Way of Contact</th>
             <th className="px-6 py-3">Status</th>
-            <th className="px-6 py-3">Next Meeting</th>
-            <th className="px-6 py-3">Branch</th>
+            <th className="px-6 py-3">Meeting</th>
             <th className="px-6 py-3">Action</th>
           </tr>
         </thead>
         <tbody>
           {paginated.map((c) => (
-            <tr key={c.customerId} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-              <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{c.customerName}</td>
-              <td className="px-6 py-4">{c.customerContact}</td>
-              <td className="px-6 py-4">{c.wayOfContactName}</td>
-              <td className="px-6 py-4">{c.contactStatusName}</td>
-              <td className="px-6 py-4">
-  {c.customerNextMeetingDate
-    ? new Date(c.customerNextMeetingDate).toISOString().split("T")[0]
-    : "-"}
-</td>
-
-              <td className="px-6 py-4">{c.branchName ?? "-"}</td>
-              <td className="px-6 py-4">
-                <div className="flex items-center gap-2">
-                  {user?.permissions.includes("Permissions.Customers.Edit") && (
-                    <button className="text-yellow-500 hover:text-yellow-600" title="Edit" onClick={() => onEditClick(c)}>
-                      <PencilIcon className="w-5 h-5" />
-                    </button>
-                  )}
-                  {user?.permissions.includes("Permissions.CustomerComments.Create") && (
-                    <button className="text-blue-500 hover:text-blue-600" title="Add Comment">
-                      <ChatBubbleLeftEllipsisIcon className="w-5 h-5" />
-                    </button>
-                  )}
-                  {user?.role?.toLowerCase() === "admin" && (
-                    <button className="text-red-500 hover:text-red-600" title="Delete" onClick={() => {
-                      setCustomerToDelete(c);
-                      setShowDeleteModal(true);
-                    }}>
-                      <TrashIcon className="w-5 h-5" />
-                    </button>
-                  )}
-                </div>
-              </td>
-            </tr>
+            <>
+              <tr
+                key={c.customerId}
+                onClick={() => setExpandedRow(expandedRow === c.customerId ? null : c.customerId)}
+                className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer"
+              >
+                <td className="px-6 py-4 text-lg">
+                  {expandedRow === c.customerId ? <ChevronDownIcon className="w-4 h-4" /> : <ChevronRightIcon className="w-4 h-4" />}
+                </td>
+                <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{c.customerName}</td>
+                <td className="px-6 py-4">{c.customerContact}</td>
+                <td className="px-6 py-4">{c.contactStatusName}</td>
+                <td className="px-6 py-4">{c.customerNextMeetingDate?.split("T")[0] || "-"}</td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-2">
+                    {user?.permissions.includes("Permissions.Customers.Edit") && (
+                      <button className="text-yellow-500 hover:text-yellow-600" title="Edit" onClick={(e) => { e.stopPropagation(); onEditClick(c); }}>
+                        <PencilIcon className="w-5 h-5" />
+                      </button>
+                    )}
+                    {user?.permissions.includes("Permissions.CustomerComments.Create") && (
+                      <button className="text-blue-500 hover:text-blue-600" title="Add Comment" onClick={(e) => { e.stopPropagation(); setSelectedCustomer(c); setShowCommentModal(true); }}>
+                        <ChatBubbleLeftEllipsisIcon className="w-5 h-5" />
+                      </button>
+                    )}
+                    {user?.role?.toLowerCase() === "admin" && (
+                      <button className="text-red-500 hover:text-red-600" title="Delete" onClick={(e) => { e.stopPropagation(); setCustomerToDelete(c); setShowDeleteModal(true); }}>
+                        <TrashIcon className="w-5 h-5" />
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+              {expandedRow === c.customerId && (
+                <tr className="bg-gray-50 dark:bg-gray-700">
+                  <td colSpan={6} className="px-6 py-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {/* معلومات أساسية */}
+                      <div>
+                        <h4 className="font-semibold text-gray-800 dark:text-white mb-2">Basic Info</h4>
+                        <Info label="Email" value={c.customerEmail} />
+                        <Info label="Whatsapp" value={c.customerWhatsapp} />
+                        <Info label="Address" value={c.customerAddress} />
+                        <Info label="City" value={c.customerCity} />
+                        <Info label="Country" value={c.customerCountry} />
+                        <Info label="Nationality" value={c.customerNationality} />
+                        <Info label="Branch" value={c.branchName} />
+                      </div>
+                      {/* معلومات التعيين والتصعيد */}
+                      <div>
+                        <h4 className="font-semibold text-gray-800 dark:text-white mb-2">Assignment & Escalation</h4>
+                        <Info label="Assigned To" value={c.customerAssignedToName} />
+                        <Info label="Assigned By" value={c.customerAssignedByName} />
+                        <Info label="Assigned Date" value={c.customerAssignedDate?.split("T")[0]} />
+                        <Info label="Managed By" value={c.managedByName} />
+                        <Info label="Escalation Requested" value={c.isEscalationRequested ? "Yes" : "No"} />
+                        <Info label="Requested By" value={c.escalationRequestedByName} />
+                        <Info label="Requested On" value={c.escalationRequestedOn} />
+                        <Info label="Escalated By" value={c.escalatedByUserName} />
+                        <Info label="Escalated On" value={c.escalatedOn} />
+                      </div>
+                      {/* تفاصيل إضافية */}
+                      <div>
+                        <h4 className="font-semibold text-gray-800 dark:text-white mb-2">Extra</h4>
+                        <Info label="Visited Showroom" value={c.isVisitedShowroom ? "Yes" : "No"} />
+                        <Info label="Time Spent" value={c.customerTimeSpent ? `${c.customerTimeSpent} min` : "-"} />
+                        <Info label="Way of Contact" value={c.wayOfContactName} />
+                        <Info label="Notes" value={c.customerNotes} />
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </>
           ))}
         </tbody>
       </table>
@@ -166,22 +210,35 @@ export default function CustomerTable({
               Are you sure you want to delete this customer?
             </h3>
             <div className="flex justify-center gap-4">
-              <button
-                className="text-white bg-red-600 hover:bg-red-800 px-5 py-2 rounded-lg text-sm"
-                onClick={handleDelete}
-              >
+              <button className="text-white bg-red-600 hover:bg-red-800 px-5 py-2 rounded-lg text-sm" onClick={handleDelete}>
                 Yes, I'm sure
               </button>
-              <button
-                className="px-5 py-2 text-sm border rounded-lg bg-white hover:bg-gray-100 dark:bg-gray-800 dark:text-white"
-                onClick={() => setShowDeleteModal(false)}
-              >
+              <button className="px-5 py-2 text-sm border rounded-lg bg-white hover:bg-gray-100 dark:bg-gray-800 dark:text-white" onClick={() => setShowDeleteModal(false)}>
                 Cancel
               </button>
             </div>
           </div>
         </div>
       )}
+
+      {showCommentModal && selectedCustomer && (
+        <AddCommentModal
+          isOpen={showCommentModal}
+          onClose={() => {
+            setShowCommentModal(false);
+            setSelectedCustomer(null);
+          }}
+          customer={selectedCustomer}
+          onSuccess={() => {}}
+        />
+      )}
     </div>
   );
 }
+
+const Info = ({ label, value }: { label: string; value?: string | number }) => (
+  <div className="mb-2">
+    <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
+    <p className="text-sm text-gray-900 dark:text-white font-medium">{value || "-"}</p>
+  </div>
+);
