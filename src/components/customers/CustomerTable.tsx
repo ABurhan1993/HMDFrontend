@@ -35,7 +35,7 @@ export default function CustomerTable({
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerData | null>(null);
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
-  const itemsPerPage = 5;
+  const itemsPerPage = 20;
   const user = useUser();
   
   
@@ -196,11 +196,15 @@ export default function CustomerTable({
       </table>
 
       <div className="mt-4">
-        <CustomPagination
-          currentPage={currentPage}
-          totalPages={Math.ceil(filtered.length / itemsPerPage)}
-          onPageChange={setCurrentPage}
-        />
+      <CustomPagination
+  currentPage={currentPage}
+  totalPages={Math.ceil(filtered.length / itemsPerPage)}
+  totalItems={filtered.length}
+  itemsPerPage={itemsPerPage}
+  onPageChange={setCurrentPage}
+/>
+
+
       </div>
 
       {showDeleteModal && customerToDelete && (

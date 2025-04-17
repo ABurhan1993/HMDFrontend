@@ -1,17 +1,22 @@
-
-
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
   onPageChange: (page: number) => void;
 }
 
 export function CustomPagination({
   currentPage,
   totalPages,
+  totalItems,
+  itemsPerPage,
   onPageChange,
 }: PaginationProps) {
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+
+  const startItem = (currentPage - 1) * itemsPerPage + 1;
+  const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
   return (
     <nav
@@ -20,17 +25,11 @@ export function CustomPagination({
     >
       <span className="text-sm font-normal text-gray-500 dark:text-gray-400 mb-4 md:mb-0 block w-full md:inline md:w-auto">
         Showing{" "}
-        <span className="font-semibold text-gray-900 dark:text-white">
-          {(currentPage - 1) * 5 + 1}
-        </span>{" "}
+        <span className="font-semibold text-gray-900 dark:text-white">{startItem}</span>{" "}
         to{" "}
-        <span className="font-semibold text-gray-900 dark:text-white">
-          {Math.min(currentPage * 5, totalPages * 5)}
-        </span>{" "}
+        <span className="font-semibold text-gray-900 dark:text-white">{endItem}</span>{" "}
         of{" "}
-        <span className="font-semibold text-gray-900 dark:text-white">
-          {totalPages * 5}
-        </span>
+        <span className="font-semibold text-gray-900 dark:text-white">{totalItems}</span>
       </span>
 
       <ul className="inline-flex -space-x-px rtl:space-x-reverse text-sm h-8">
@@ -61,9 +60,7 @@ export function CustomPagination({
 
         <li>
           <button
-            onClick={() =>
-              onPageChange(Math.min(totalPages, currentPage + 1))
-            }
+            onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage === totalPages}
             className="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
           >
