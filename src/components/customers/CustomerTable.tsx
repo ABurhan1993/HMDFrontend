@@ -198,11 +198,11 @@ export default function CustomerTable({
       <div className="mt-4">
       <CustomPagination
   currentPage={currentPage}
-  totalPages={Math.ceil(filtered.length / itemsPerPage)}
-  totalItems={filtered.length}
   itemsPerPage={itemsPerPage}
+  totalItems={filtered.length}
   onPageChange={setCurrentPage}
 />
+
 
 
       </div>

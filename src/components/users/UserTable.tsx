@@ -31,7 +31,6 @@ const UserTable = ({
   setSearch,
   currentPage,
   setCurrentPage,
-  totalPages,
 }: Props) => {
   const user = useUser();
 
@@ -94,11 +93,13 @@ const UserTable = ({
       </table>
 
       <div className="mt-4">
-        <CustomPagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
+      <CustomPagination
+  currentPage={currentPage}
+  onPageChange={setCurrentPage}
+  itemsPerPage={20} // أو أي عدد حسب عدد السطور بالصفحة
+  totalItems={data.length}
+/>
+
       </div>
     </div>
   );

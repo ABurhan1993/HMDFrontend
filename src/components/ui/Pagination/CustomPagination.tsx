@@ -1,22 +1,20 @@
 interface PaginationProps {
   currentPage: number;
-  totalPages: number;
+  onPageChange: (page: number) => void;
   totalItems: number;
   itemsPerPage: number;
-  onPageChange: (page: number) => void;
 }
 
 export function CustomPagination({
   currentPage,
-  totalPages,
+  onPageChange,
   totalItems,
   itemsPerPage,
-  onPageChange,
 }: PaginationProps) {
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
-
-  const startItem = (currentPage - 1) * itemsPerPage + 1;
-  const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+  const from = (currentPage - 1) * itemsPerPage + 1;
+  const to = Math.min(currentPage * itemsPerPage, totalItems);
 
   return (
     <nav
@@ -25,9 +23,9 @@ export function CustomPagination({
     >
       <span className="text-sm font-normal text-gray-500 dark:text-gray-400 mb-4 md:mb-0 block w-full md:inline md:w-auto">
         Showing{" "}
-        <span className="font-semibold text-gray-900 dark:text-white">{startItem}</span>{" "}
+        <span className="font-semibold text-gray-900 dark:text-white">{from}</span>{" "}
         to{" "}
-        <span className="font-semibold text-gray-900 dark:text-white">{endItem}</span>{" "}
+        <span className="font-semibold text-gray-900 dark:text-white">{to}</span>{" "}
         of{" "}
         <span className="font-semibold text-gray-900 dark:text-white">{totalItems}</span>
       </span>
