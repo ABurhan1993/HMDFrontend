@@ -99,8 +99,8 @@ const AddCustomerForm = ({ isOpen, onClose, onSuccess, users }: AddCustomerFormP
               <Input type="email" name="customerEmail" value={formData.customerEmail} onChange={handleChange} placeholder="Email" />
             </div>
             <div className="grid md:grid-cols-2 md:gap-6">
-              <Input name="customerContact" value={formData.customerContact} onChange={handleChange} placeholder="Phone" />
-              <Input name="customerWhatsapp" value={formData.customerWhatsapp} onChange={handleChange} placeholder="WhatsApp" />
+              <Input name="customerContact" value={formData.customerContact} onChange={handleChange} placeholder="Phone e.g. 971555555555" />
+              <Input name="customerWhatsapp" value={formData.customerWhatsapp} onChange={handleChange} placeholder="Whatsapp e.g. 971555555555" />
             </div>
             <div className="grid md:grid-cols-2 md:gap-6">
               <Input name="customerAddress" value={formData.customerAddress} onChange={handleChange} placeholder="Address" />

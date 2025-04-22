@@ -6,6 +6,7 @@ import {
   HorizontaLDots,
   UserCircleIcon,
   PlugInIcon,
+  DocsIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import hmdLogo from "@/assets/hmd-pdf.png";
@@ -22,6 +23,14 @@ const navItems = [
     subItems: [{ name: "Customers", path: "/customers", pro: false }],
   },
   {
+    icon: <DocsIcon  />,
+    name: "Inquiries",
+    subItems: [
+      { name: "Inquiry List", path: "/inquiries", pro: false },
+      // ممكن نضيف لاحقًا: Inquiry Add, Escalate, etc.
+    ],
+  },
+  {
     icon: <PlugInIcon />,
     name: "Settings",
     subItems: [
@@ -29,6 +38,7 @@ const navItems = [
       { name: "Role List", path: "/roles", pro: false }, // صفحة لاحقًا
     ],
   },
+  
 ];
 
 

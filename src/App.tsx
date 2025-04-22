@@ -20,6 +20,7 @@ import Home from "./pages/Dashboard/Home";
 import PrivateRoute from "./components/common/PrivateRoute";
 import CustomerList from "./pages/Customers/CustomerList";
 import UserList from "@/pages/Users/UserList";
+import InquiryList from "./pages/Inquiry/InquiryList";
 
 export default function App() {
   return (
@@ -45,6 +46,8 @@ export default function App() {
             <Route path="/line-chart" element={<LineChart />} />
             <Route path="/bar-chart" element={<BarChart />} />
             <Route path="/users" element={<UserList />} />
+            <Route path="/inquiries" element={<InquiryList />} />
+
           </Route>
         </Route>
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { CustomPagination } from "@/components/ui/Pagination/CustomPagination";
 import Button from "@/components/ui/button/Button";
 import {
@@ -18,14 +18,23 @@ interface CustomerTableProps {
   onAddClick: () => void;
   onEditClick: (customer: CustomerData) => void;
   filterStatus?: string | null;
+  filterCreatedBy?: string | null;
+  filterAssignedTo?: string | null;
+  filterCreatedDate?: "today" | "week" | "month" | null;
+  setFilterCreatedDate?: (val: "today" | "week" | "month" | null) => void;
   onRefresh: () => void;
 }
+
 
 export default function CustomerTable({
   customers,
   onAddClick,
   onEditClick,
   filterStatus,
+  filterCreatedBy, // ✅ هون كمان
+  filterAssignedTo, // ✅ وهون
+  filterCreatedDate,
+  setFilterCreatedDate,
   onRefresh,
 }: CustomerTableProps) {
   const [search, setSearch] = useState("");
@@ -38,17 +47,32 @@ export default function CustomerTable({
   const itemsPerPage = 20;
   const user = useUser();
   
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const custom = e as CustomEvent;
+      setCurrentPage(1); // reset pagination
+      if (custom.detail === null) {
+        filterCreatedDate = null;
+      } else {
+        filterCreatedDate = custom.detail;
+      }
+    };
+  
+    window.addEventListener("filter-date-change", handler);
+    return () => window.removeEventListener("filter-date-change", handler);
+  }, []);
+  
   
 
   const filtered = customers.filter((c) => {
     const matchSearch =
       c.customerName.toLowerCase().includes(search.toLowerCase()) ||
       c.customerContact.includes(search);
-
+  
     const today = new Date();
     let isToday = false;
     let isDelayed = false;
-
+  
     if (c.customerNextMeetingDate) {
       const parsedDate = new Date(c.customerNextMeetingDate);
       if (!isNaN(parsedDate.getTime())) {
@@ -56,7 +80,7 @@ export default function CustomerTable({
         isToday = parsedDate.toDateString() === today.toDateString();
       }
     }
-
+  
     const matchStatus =
       filterStatus === "all" ||
       (!filterStatus && true) ||
@@ -68,9 +92,37 @@ export default function CustomerTable({
       (filterStatus === "NeedToFollowUpDelayed" && c.contactStatusName === "NeedToFollowUp" && isDelayed) ||
       (filterStatus === "NeedToContactToday" && c.contactStatusName === "NeedToContact" && isToday) ||
       (filterStatus === "NeedToFollowUpToday" && c.contactStatusName === "NeedToFollowUp" && isToday);
-
-    return matchSearch && matchStatus;
+  
+    const matchCreatedBy = !filterCreatedBy || c.userId === filterCreatedBy;
+    const matchAssignedTo = !filterAssignedTo || c.customerAssignedTo === filterAssignedTo;
+    const matchDate = (() => {
+      if (!filterCreatedDate) return true;
+    
+      const created = new Date(c.createdDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+    
+      if (filterCreatedDate === "today") {
+        return created.toDateString() === today.toDateString();
+      }
+    
+      if (filterCreatedDate === "week") {
+        const oneWeekAgo = new Date(today);
+        oneWeekAgo.setDate(today.getDate() - 7);
+        return created >= oneWeekAgo;
+      }
+    
+      if (filterCreatedDate === "month") {
+        return created.getMonth() === today.getMonth() && created.getFullYear() === today.getFullYear();
+      }
+    
+      return true;
+    })();
+    
+  
+    return matchSearch && matchStatus && matchCreatedBy && matchAssignedTo && matchDate;
   });
+  
 
   const paginated = filtered.slice(
     (currentPage - 1) * itemsPerPage,
@@ -95,14 +147,79 @@ export default function CustomerTable({
     <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
       <div className="flex items-center justify-between flex-wrap md:flex-row space-y-4 md:space-y-0 pb-4 bg-white dark:bg-gray-900">
         <Button onClick={onAddClick} size="sm">New Customer</Button>
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="block p-2 px-4 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-          placeholder="Search customers"
-        />
+  
+        {/* ✅ فلتر التاريخ الجديد */}
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <button
+              id="dropdownRadioButton"
+              className="inline-flex items-center text-gray-500 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-3 py-1.5 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
+              type="button"
+              onClick={() => {
+                const menu = document.getElementById("dropdownRadio");
+                menu?.classList.toggle("hidden");
+              }}
+            >
+              📅 {filterCreatedDate === "today"
+                ? "Today"
+                : filterCreatedDate === "week"
+                ? "Last 7 Days"
+                : filterCreatedDate === "month"
+                ? "This Month"
+                : "All Dates"}
+              <svg className="w-2.5 h-2.5 ms-2.5" aria-hidden="true" fill="none" viewBox="0 0 10 6">
+                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 4 4 4-4" />
+              </svg>
+            </button>
+  
+            <div
+              id="dropdownRadio"
+              className="z-10 hidden absolute mt-2 w-48 bg-white divide-y divide-gray-100 rounded-lg shadow-sm dark:bg-gray-700 dark:divide-gray-600"
+            >
+              <ul className="p-3 space-y-1 text-sm text-gray-700 dark:text-gray-200">
+                {[
+                  { label: "All", value: null },
+                  { label: "Today", value: "today" },
+                  { label: "Last 7 Days", value: "week" },
+                  { label: "This Month", value: "month" },
+                ].map((option, i) => (
+                  <li key={i}>
+                    <label
+                      className="flex items-center p-2 rounded-sm hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
+                      onClick={() => {
+                        setFilterCreatedDate?.(option.value as "today" | "week" | "month" | null);
+                        const menu = document.getElementById("dropdownRadio");
+                        menu?.classList.add("hidden");
+                      }}
+                    >
+                      <input
+                        type="radio"
+                        name="filter-radio"
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+                        checked={filterCreatedDate === option.value}
+                        onChange={() => {}}
+                      />
+                      <span className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                        {option.label}
+                      </span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+  
+          {/* ✅ حقل البحث */}
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="block p-2 px-4 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            placeholder="Search customers"
+          />
+        </div>
       </div>
+  
 
       <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
         <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -111,6 +228,7 @@ export default function CustomerTable({
             <th className="px-6 py-3">Name</th>
             <th className="px-6 py-3">Contact</th>
             <th className="px-6 py-3">Status</th>
+            <th className="px-6 py-3">Added On</th>
             <th className="px-6 py-3">Meeting</th>
             <th className="px-6 py-3">Action</th>
           </tr>
@@ -129,6 +247,8 @@ export default function CustomerTable({
                 <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{c.customerName}</td>
                 <td className="px-6 py-4">{c.customerContact}</td>
                 <td className="px-6 py-4">{c.contactStatusName}</td>
+                <td className="px-6 py-4">{c.createdDate?.split("T")[0] || "-"}</td>
+
                 <td className="px-6 py-4">{c.customerNextMeetingDate?.split("T")[0] || "-"}</td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
