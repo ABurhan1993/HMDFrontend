@@ -8,7 +8,6 @@ import AssignedToStatsCards from "@/components/customers/AssignedToStatsCards";
 import axios from "@/components/utils/axios";
 import type { CustomerData } from "@/types/customer";
 import type { UserDto } from "@/types/UserDto";
-import Button from "@/components/ui/button/Button";
 
 const CustomerList = () => {
   const [showAddModal, setShowAddModal] = useState(false);
