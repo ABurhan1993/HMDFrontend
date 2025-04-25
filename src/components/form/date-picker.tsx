@@ -28,17 +28,19 @@ export default function DatePicker({
       mode: mode || "single",
       static: true,
       monthSelectorType: "static",
-      dateFormat: "Y-m-d",
+      enableTime: true, // ✅ لتفعيل الوقت
+      dateFormat: "Y-m-d H:i", // ✅ التاريخ مع الوقت
       defaultDate,
       onChange,
     });
-
+  
     return () => {
       if (!Array.isArray(flatPickr)) {
         flatPickr.destroy();
       }
     };
   }, [mode, onChange, id, defaultDate]);
+  
 
   return (
     <div>

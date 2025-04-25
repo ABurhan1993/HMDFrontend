@@ -21,6 +21,8 @@ import PrivateRoute from "./components/common/PrivateRoute";
 import CustomerList from "./pages/Customers/CustomerList";
 import UserList from "@/pages/Users/UserList";
 import InquiryList from "./pages/Inquiry/InquiryList";
+import "react-datepicker/dist/react-datepicker.css";
+
 
 export default function App() {
   return (

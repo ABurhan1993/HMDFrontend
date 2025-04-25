@@ -1,17 +1,17 @@
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import { CustomPagination } from "@/components/ui/Pagination/CustomPagination";
 import Button from "@/components/ui/button/Button";
 import {
   TrashIcon,
   PencilIcon,
-  ChatBubbleLeftEllipsisIcon,
   ChevronDownIcon,
   ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 import { useUser } from "@/hooks/useUser";
 import type { CustomerData } from "@/types/customer";
 import axios from "@/components/utils/axios";
-import AddCommentModal from "./AddCommentModat";
+import { Fragment } from "react";
+import { format } from "date-fns";
 
 interface CustomerTableProps {
   customers: CustomerData[];
@@ -25,14 +25,13 @@ interface CustomerTableProps {
   onRefresh: () => void;
 }
 
-
 export default function CustomerTable({
   customers,
   onAddClick,
   onEditClick,
   filterStatus,
-  filterCreatedBy, // ✅ هون كمان
-  filterAssignedTo, // ✅ وهون
+  filterCreatedBy,
+  filterAssignedTo,
   filterCreatedDate,
   setFilterCreatedDate,
   onRefresh,
@@ -41,38 +40,34 @@ export default function CustomerTable({
   const [currentPage, setCurrentPage] = useState(1);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [customerToDelete, setCustomerToDelete] = useState<CustomerData | null>(null);
-  const [showCommentModal, setShowCommentModal] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState<CustomerData | null>(null);
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
   const itemsPerPage = 20;
   const user = useUser();
-  
+
   useEffect(() => {
     const handler = (e: Event) => {
       const custom = e as CustomEvent;
-      setCurrentPage(1); // reset pagination
+      setCurrentPage(1);
       if (custom.detail === null) {
         filterCreatedDate = null;
       } else {
         filterCreatedDate = custom.detail;
       }
     };
-  
+
     window.addEventListener("filter-date-change", handler);
     return () => window.removeEventListener("filter-date-change", handler);
   }, []);
-  
-  
 
   const filtered = customers.filter((c) => {
     const matchSearch =
       c.customerName.toLowerCase().includes(search.toLowerCase()) ||
       c.customerContact.includes(search);
-  
+
     const today = new Date();
     let isToday = false;
     let isDelayed = false;
-  
+
     if (c.customerNextMeetingDate) {
       const parsedDate = new Date(c.customerNextMeetingDate);
       if (!isNaN(parsedDate.getTime())) {
@@ -80,7 +75,7 @@ export default function CustomerTable({
         isToday = parsedDate.toDateString() === today.toDateString();
       }
     }
-  
+
     const matchStatus =
       filterStatus === "all" ||
       (!filterStatus && true) ||
@@ -92,37 +87,35 @@ export default function CustomerTable({
       (filterStatus === "NeedToFollowUpDelayed" && c.contactStatusName === "NeedToFollowUp" && isDelayed) ||
       (filterStatus === "NeedToContactToday" && c.contactStatusName === "NeedToContact" && isToday) ||
       (filterStatus === "NeedToFollowUpToday" && c.contactStatusName === "NeedToFollowUp" && isToday);
-  
+
     const matchCreatedBy = !filterCreatedBy || c.userId === filterCreatedBy;
     const matchAssignedTo = !filterAssignedTo || c.customerAssignedTo === filterAssignedTo;
     const matchDate = (() => {
       if (!filterCreatedDate) return true;
-    
+
       const created = new Date(c.createdDate);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-    
+
       if (filterCreatedDate === "today") {
         return created.toDateString() === today.toDateString();
       }
-    
+
       if (filterCreatedDate === "week") {
         const oneWeekAgo = new Date(today);
         oneWeekAgo.setDate(today.getDate() - 7);
         return created >= oneWeekAgo;
       }
-    
+
       if (filterCreatedDate === "month") {
         return created.getMonth() === today.getMonth() && created.getFullYear() === today.getFullYear();
       }
-    
+
       return true;
     })();
-    
-  
+
     return matchSearch && matchStatus && matchCreatedBy && matchAssignedTo && matchDate;
   });
-  
 
   const paginated = filtered.slice(
     (currentPage - 1) * itemsPerPage,
@@ -135,20 +128,16 @@ export default function CustomerTable({
       await axios.delete(`/customer/delete?id=${customerToDelete.customerId}`);
       setShowDeleteModal(false);
       setCustomerToDelete(null);
-      onRefresh(); // ✅ هون بنعمل الريفريش
+      onRefresh();
     } catch {
       alert("Failed to delete customer");
     }
   };
-  
-  
 
   return (
     <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
       <div className="flex items-center justify-between flex-wrap md:flex-row space-y-4 md:space-y-0 pb-4 bg-white dark:bg-gray-900">
         <Button onClick={onAddClick} size="sm">New Customer</Button>
-  
-        {/* ✅ فلتر التاريخ الجديد */}
         <div className="flex items-center gap-3">
           <div className="relative">
             <button
@@ -219,8 +208,6 @@ export default function CustomerTable({
           />
         </div>
       </div>
-  
-
       <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
         <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <tr>
@@ -235,9 +222,8 @@ export default function CustomerTable({
         </thead>
         <tbody>
           {paginated.map((c) => (
-            <>
+            <Fragment key={c.customerId}>
               <tr
-                key={c.customerId}
                 onClick={() => setExpandedRow(expandedRow === c.customerId ? null : c.customerId)}
                 className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer"
               >
@@ -248,18 +234,19 @@ export default function CustomerTable({
                 <td className="px-6 py-4">{c.customerContact}</td>
                 <td className="px-6 py-4">{c.contactStatusName}</td>
                 <td className="px-6 py-4">{c.createdDate?.split("T")[0] || "-"}</td>
+                
 
-                <td className="px-6 py-4">{c.customerNextMeetingDate?.split("T")[0] || "-"}</td>
+<td className="px-6 py-4">
+  {c.customerNextMeetingDate
+    ? `${c.customerNextMeetingDate.slice(0, 10)} - ${format(new Date(c.customerNextMeetingDate), "HH:mm")}`
+    : "-"}
+</td>
+
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
                     {user?.permissions.includes("Permissions.Customers.Edit") && (
                       <button className="text-yellow-500 hover:text-yellow-600" title="Edit" onClick={(e) => { e.stopPropagation(); onEditClick(c); }}>
                         <PencilIcon className="w-5 h-5" />
-                      </button>
-                    )}
-                    {user?.permissions.includes("Permissions.CustomerComments.Create") && (
-                      <button className="text-blue-500 hover:text-blue-600" title="Add Comment" onClick={(e) => { e.stopPropagation(); setSelectedCustomer(c); setShowCommentModal(true); }}>
-                        <ChatBubbleLeftEllipsisIcon className="w-5 h-5" />
                       </button>
                     )}
                     {user?.role?.toLowerCase() === "admin" && (
@@ -272,7 +259,7 @@ export default function CustomerTable({
               </tr>
               {expandedRow === c.customerId && (
                 <tr className="bg-gray-50 dark:bg-gray-700">
-                  <td colSpan={6} className="px-6 py-6">
+                  <td colSpan={7} className="px-6 py-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       {/* معلومات أساسية */}
                       <div>
@@ -304,29 +291,23 @@ export default function CustomerTable({
                         <Info label="Visited Showroom" value={c.isVisitedShowroom ? "Yes" : "No"} />
                         <Info label="Time Spent" value={c.customerTimeSpent ? `${c.customerTimeSpent} min` : "-"} />
                         <Info label="Way of Contact" value={c.wayOfContactName} />
-                        <Info label="Notes" value={c.customerNotes} />
                       </div>
                     </div>
                   </td>
                 </tr>
               )}
-            </>
+            </Fragment>
           ))}
         </tbody>
       </table>
-
       <div className="mt-4">
-      <CustomPagination
-  currentPage={currentPage}
-  itemsPerPage={itemsPerPage}
-  totalItems={filtered.length}
-  onPageChange={setCurrentPage}
-/>
-
-
-
+        <CustomPagination
+          currentPage={currentPage}
+          itemsPerPage={itemsPerPage}
+          totalItems={filtered.length}
+          onPageChange={setCurrentPage}
+        />
       </div>
-
       {showDeleteModal && customerToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-lg max-w-md w-full">
@@ -343,18 +324,6 @@ export default function CustomerTable({
             </div>
           </div>
         </div>
-      )}
-
-      {showCommentModal && selectedCustomer && (
-        <AddCommentModal
-          isOpen={showCommentModal}
-          onClose={() => {
-            setShowCommentModal(false);
-            setSelectedCustomer(null);
-          }}
-          customer={selectedCustomer}
-          onSuccess={() => {}}
-        />
       )}
     </div>
   );

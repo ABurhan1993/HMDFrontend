@@ -776,3 +776,20 @@ span.flatpickr-weekday,
 .simplebar-scrollbar.simplebar-visible:before {
   @apply opacity-100;
 }
+
+.react-datepicker__time-container .react-datepicker__time {
+  background-color: #1f2937; /* Tailwind dark: bg-gray-800 */
+}
+
+.react-datepicker__time-container .react-datepicker__time-box {
+  color: white;
+}
+
+.react-datepicker__time-list-item {
+  color: white;
+}
+
+.react-datepicker__time-list-item--selected {
+  background-color: #3b82f6; /* Tailwind: bg-blue-500 */
+  color: white;
+}

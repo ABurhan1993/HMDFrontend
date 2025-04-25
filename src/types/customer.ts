@@ -9,7 +9,6 @@ export interface CustomerData {
     customerCity?: string;
     customerCountry?: string;
     customerNationality?: string;
-    customerNotes?: string;
     customerNextMeetingDate?: string;
     isVisitedShowroom: boolean;
     customerTimeSpent: number;
@@ -34,6 +33,7 @@ export interface CustomerData {
     escalatedByUserName?: string;
     escalatedOn?: string;
     createdDate: string;
+    commentDetail?: string;
   }
   
   export interface CustomerCountByUser {

@@ -3,7 +3,7 @@ import Input from "../form/input/InputField";
 import TextArea from "../form/input/TextArea";
 import Select from "../form/Select";
 import Button from "../ui/button/Button";
-import DatePicker from "../form/date-picker";
+import DateTimePicker from "../form/date-time-picker";
 import type { UserDto } from "@/types/UserDto";
 import axios from "@/components/utils/axios";
 
@@ -47,29 +47,39 @@ const AddCustomerForm = ({ isOpen, onClose, onSuccess, users }: AddCustomerFormP
     setFormData((prev) => ({ ...prev, [name]: updatedValue }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await axios.post("/customer/create", {
-        ...formData,
-        contactStatus: Number(formData.contactStatus),
-        wayOfContact: Number(formData.wayOfContact),
-      });
+  const [formSubmitted, setFormSubmitted] = useState(false);
 
-      setFormData({ ...initialFormState });
-      onSuccess();
-      onClose();
-    } catch (err) {
-      alert("Failed to add customer.");
-    }
-  };
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setFormSubmitted(true);
 
-  const handleDateChange = (selectedDates: Date[]) => {
-    if (selectedDates.length > 0) {
-      const formattedDate = selectedDates[0].toISOString().split("T")[0];
-      setFormData((prev) => ({ ...prev, customerNextMeetingDate: formattedDate }));
-    }
-  };
+  if (
+    !formData.customerName ||
+    !formData.customerContact ||
+    !formData.customerAddress ||
+    !formData.customerNextMeetingDate ||
+    !formData.wayOfContact ||
+    !formData.contactStatus ||
+    !formData.customerAssignedTo
+  ) {
+    return; // في نقص بالفورم
+  }
+
+  try {
+    await axios.post("/customer/create", {
+      ...formData,
+      contactStatus: Number(formData.contactStatus),
+      wayOfContact: Number(formData.wayOfContact),
+    });
+
+    setFormData({ ...initialFormState });
+    onSuccess();
+    onClose();
+  } catch (err) {
+    alert("Failed to add customer.");
+  }
+};
+
 
   useEffect(() => {
     if (!isOpen) setFormData({ ...initialFormState });
@@ -92,66 +102,107 @@ const AddCustomerForm = ({ isOpen, onClose, onSuccess, users }: AddCustomerFormP
               ✕
             </button>
           </div>
-
+  
           <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
             <div className="grid md:grid-cols-2 md:gap-6">
-              <Input name="customerName" value={formData.customerName} onChange={handleChange} placeholder="Customer Name" />
+              <div>
+                <Input name="customerName" value={formData.customerName} onChange={handleChange} placeholder="Customer Name" />
+                {formSubmitted && !formData.customerName && (
+                  <p className="text-red-500 text-sm mt-1">Customer name is required</p>
+                )}
+              </div>
               <Input type="email" name="customerEmail" value={formData.customerEmail} onChange={handleChange} placeholder="Email" />
             </div>
+  
             <div className="grid md:grid-cols-2 md:gap-6">
-              <Input name="customerContact" value={formData.customerContact} onChange={handleChange} placeholder="Phone e.g. 971555555555" />
+              <div>
+                <Input name="customerContact" value={formData.customerContact} onChange={handleChange} placeholder="Phone e.g. 971555555555" />
+                {formSubmitted && !formData.customerContact && (
+                  <p className="text-red-500 text-sm mt-1">Phone number is required</p>
+                )}
+              </div>
               <Input name="customerWhatsapp" value={formData.customerWhatsapp} onChange={handleChange} placeholder="Whatsapp e.g. 971555555555" />
             </div>
+  
             <div className="grid md:grid-cols-2 md:gap-6">
-              <Input name="customerAddress" value={formData.customerAddress} onChange={handleChange} placeholder="Address" />
+              <div>
+                <Input name="customerAddress" value={formData.customerAddress} onChange={handleChange} placeholder="Address" />
+                {formSubmitted && !formData.customerAddress && (
+                  <p className="text-red-500 text-sm mt-1">Address is required</p>
+                )}
+              </div>
               <Input name="customerCity" value={formData.customerCity} onChange={handleChange} placeholder="City" />
             </div>
+  
             <div className="grid md:grid-cols-2 md:gap-6">
               <Input name="customerCountry" value={formData.customerCountry} onChange={handleChange} placeholder="Country" />
               <Input name="customerNationality" value={formData.customerNationality} onChange={handleChange} placeholder="Nationality" />
             </div>
+  
             <div className="grid md:grid-cols-2 md:gap-6">
-              <Select
-                options={users.map((u) => ({ value: u.id, label: u.fullName }))}
-                placeholder="Assigned To"
-                onChange={(value) => setFormData({ ...formData, customerAssignedTo: value })}
-                defaultValue={formData.customerAssignedTo}
-              />
-              <DatePicker
-                id="customerNextMeetingDate"
-                placeholder="Next Meeting Date"
-                onChange={handleDateChange}
-              />
+              <div>
+                <Select
+                  options={users.map((u) => ({ value: u.id, label: u.fullName }))}
+                  placeholder="Assigned To"
+                  onChange={(value) => setFormData({ ...formData, customerAssignedTo: value })}
+                  defaultValue={formData.customerAssignedTo}
+                />
+                {formSubmitted && !formData.customerAssignedTo && (
+                  <p className="text-red-500 text-sm mt-1">Assigned user is required</p>
+                )}
+              </div>
+              <div>
+                <DateTimePicker
+                  id="customerNextMeetingDate"
+                  value={formData.customerNextMeetingDate || ""}
+                  onChange={(val) => setFormData({ ...formData, customerNextMeetingDate: val })}
+                />
+                {formSubmitted && !formData.customerNextMeetingDate && (
+                  <p className="text-red-500 text-sm mt-1">Meeting date is required</p>
+                )}
+              </div>
             </div>
+  
             <div className="grid md:grid-cols-2 md:gap-6">
-              <Select
-                options={[
-                  { value: "1", label: "Phone" },
-                  { value: "2", label: "WhatsApp" },
-                  { value: "3", label: "Email" },
-                  { value: "4", label: "Facebook" },
-                  { value: "5", label: "Instagram" },
-                  { value: "6", label: "Google" },
-                  { value: "7", label: "Twitter" },
-                  { value: "8", label: "Walk In" },
-                  { value: "9", label: "Friend Recommendation" },
-                ]}
-                placeholder="Way of Contact"
-                onChange={(value) => setFormData({ ...formData, wayOfContact: value })}
-                defaultValue={formData.wayOfContact}
-              />
-              <Select
-                options={[
-                  { value: "1", label: "Contacted" },
-                  { value: "2", label: "Need to Contact" },
-                  { value: "3", label: "Need to Follow Up" },
-                  { value: "4", label: "Not Responding" },
-                ]}
-                placeholder="Contact Status"
-                onChange={(value) => setFormData({ ...formData, contactStatus: value })}
-                defaultValue={formData.contactStatus}
-              />
+              <div>
+                <Select
+                  options={[
+                    { value: "1", label: "Phone" },
+                    { value: "2", label: "WhatsApp" },
+                    { value: "3", label: "Email" },
+                    { value: "4", label: "Facebook" },
+                    { value: "5", label: "Instagram" },
+                    { value: "6", label: "Google" },
+                    { value: "7", label: "Twitter" },
+                    { value: "8", label: "Walk In" },
+                    { value: "9", label: "Friend Recommendation" },
+                  ]}
+                  placeholder="Way of Contact"
+                  onChange={(value) => setFormData({ ...formData, wayOfContact: value })}
+                  defaultValue={formData.wayOfContact}
+                />
+                {formSubmitted && !formData.wayOfContact && (
+                  <p className="text-red-500 text-sm mt-1">Way of contact is required</p>
+                )}
+              </div>
+              <div>
+                <Select
+                  options={[
+                    { value: "1", label: "Contacted" },
+                    { value: "2", label: "Need to Contact" },
+                    { value: "3", label: "Need to Follow Up" },
+                    { value: "4", label: "Not Responding" },
+                  ]}
+                  placeholder="Contact Status"
+                  onChange={(value) => setFormData({ ...formData, contactStatus: value })}
+                  defaultValue={formData.contactStatus}
+                />
+                {formSubmitted && !formData.contactStatus && (
+                  <p className="text-red-500 text-sm mt-1">Contact status is required</p>
+                )}
+              </div>
             </div>
+  
             <div>
               <label className="inline-flex items-center cursor-pointer">
                 <input
@@ -171,6 +222,7 @@ const AddCustomerForm = ({ isOpen, onClose, onSuccess, users }: AddCustomerFormP
                   Visited Showroom?
                 </span>
               </label>
+  
               {formData.isVisitedShowroom && (
                 <div className="mt-3">
                   <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">
@@ -218,17 +270,20 @@ const AddCustomerForm = ({ isOpen, onClose, onSuccess, users }: AddCustomerFormP
                 </div>
               )}
             </div>
+  
             <TextArea
-              placeholder="Notes"
-              value={formData.customerNotes}
-              onChange={(val) => setFormData({ ...formData, customerNotes: val })}
+              placeholder="Add Comment"
+              value={formData.initialComment}
+              onChange={(val) => setFormData({ ...formData, initialComment: val })}
             />
+  
             <Button className="w-full" size="sm">Save Customer</Button>
           </form>
         </div>
       </div>
     </div>
   );
+  
 };
 
 export default AddCustomerForm;
