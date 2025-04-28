@@ -8,6 +8,7 @@ import type { CustomerData } from "@/types/customer";
 import type { UserDto } from "@/types/UserDto";
 import axios from "@/components/utils/axios";
 import CustomerCommentModal from "./CustomerCommentsModal";
+import { toast } from 'react-hot-toast';
 
 interface Props {
   isOpen: boolean;
@@ -73,7 +74,7 @@ const EditCustomerForm = ({ isOpen, onClose, onSuccess, editingCustomer, users }
       onSuccess();
       onClose();
     } catch (err) {
-      alert("Failed to update customer.");
+      toast.error("Failed to update customer.");
     }
   };
 

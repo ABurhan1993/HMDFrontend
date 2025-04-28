@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { CustomPagination } from "@/components/ui/Pagination/CustomPagination";
+import { useUser } from "@/hooks/useUser"; // ✅ نضيفه
 import type { Inquiry } from "@/types/inquiry";
 import { Fragment } from "react";
 
@@ -37,6 +38,7 @@ export default function InquiryTable({
   setCurrentPage,
 }: InquiryTableProps) {
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
+  const user = useUser(); // ✅
 
   const handleExpand = (id: number) => {
     setExpandedRow((prev) => (prev === id ? null : id));
@@ -47,12 +49,15 @@ export default function InquiryTable({
   return (
     <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
       <div className="flex items-center justify-between flex-wrap md:flex-row space-y-4 md:space-y-0 pb-4 bg-white dark:bg-gray-900 px-4">
-        <button
-          onClick={onAddClick}
-          className="text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 text-sm rounded-lg"
-        >
-          New Inquiry
-        </button>
+        {/* 🔥 نعرض زر New Inquiry بس للي معه صلاحية Create */}
+        {user?.permissions.includes("Permissions.Inquiries.Create") && (
+          <button
+            onClick={onAddClick}
+            className="text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 text-sm rounded-lg"
+          >
+            + New Inquiry
+          </button>
+        )}
         <input
           type="text"
           value={search}

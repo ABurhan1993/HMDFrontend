@@ -12,6 +12,8 @@ import type { CustomerData } from "@/types/customer";
 import axios from "@/components/utils/axios";
 import { Fragment } from "react";
 import { format } from "date-fns";
+import { toast } from 'react-hot-toast';
+
 
 interface CustomerTableProps {
   customers: CustomerData[];
@@ -130,14 +132,17 @@ export default function CustomerTable({
       setCustomerToDelete(null);
       onRefresh();
     } catch {
-      alert("Failed to delete customer");
+      toast.error("Failed to delete customer");
     }
   };
 
   return (
     <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
       <div className="flex items-center justify-between flex-wrap md:flex-row space-y-4 md:space-y-0 pb-4 bg-white dark:bg-gray-900">
-        <Button onClick={onAddClick} size="sm">New Customer</Button>
+      {user?.permissions.includes("Permissions.Customers.Create") && (
+  <Button onClick={onAddClick} size="sm">New Customer</Button>
+)}
+
         <div className="flex items-center gap-3">
           <div className="relative">
             <button
@@ -249,11 +254,16 @@ export default function CustomerTable({
                         <PencilIcon className="w-5 h-5" />
                       </button>
                     )}
-                    {user?.role?.toLowerCase() === "admin" && (
-                      <button className="text-red-500 hover:text-red-600" title="Delete" onClick={(e) => { e.stopPropagation(); setCustomerToDelete(c); setShowDeleteModal(true); }}>
-                        <TrashIcon className="w-5 h-5" />
-                      </button>
-                    )}
+                    {user?.permissions.includes("Permissions.Customers.Delete") && (
+  <button
+    className="text-red-500 hover:text-red-600"
+    title="Delete"
+    onClick={(e) => { e.stopPropagation(); setCustomerToDelete(c); setShowDeleteModal(true); }}
+  >
+    <TrashIcon className="w-5 h-5" />
+  </button>
+)}
+
                   </div>
                 </td>
               </tr>

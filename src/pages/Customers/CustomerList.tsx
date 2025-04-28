@@ -8,8 +8,11 @@ import AssignedToStatsCards from "@/components/customers/AssignedToStatsCards";
 import axios from "@/components/utils/axios";
 import type { CustomerData } from "@/types/customer";
 import type { UserDto } from "@/types/UserDto";
+import { useUser } from "@/hooks/useUser"; // ✅ إضافة
 
 const CustomerList = () => {
+  const user = useUser(); // ✅ جلب معلومات المستخدم
+
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<CustomerData | null>(null);
@@ -20,8 +23,6 @@ const CustomerList = () => {
   const [filterCreatedBy, setFilterCreatedBy] = useState<string | null>(null);
   const [filterAssignedTo, setFilterAssignedTo] = useState<string | null>(null);
   const [filterCreatedDate, setFilterCreatedDate] = useState<"today" | "week" | "month" | null>(null);
-
-
 
   const fetchCustomers = () => {
     axios.get("/customer/all").then((res) => setAllCustomers(res.data));
@@ -53,62 +54,64 @@ const CustomerList = () => {
       {/* ✅ Created By Cards (Top) */}
       <CreatedByStatsCards onFilter={(userId) => {
         setFilterCreatedBy(userId);
-        setFilterAssignedTo(null); // ✅ reset
-        setFilterStatus(null);     // ✅ reset
+        setFilterAssignedTo(null);
+        setFilterStatus(null);
       }} />
-
 
       {/* ✅ Contact Status Cards */}
       <CustomerStatsCards
-  customers={allCustomers}
-  onFilter={(status) => {
-    setFilterStatus(status);
-    setFilterCreatedBy(null); // ✅ reset
-    setFilterAssignedTo(null); // ✅ reset
-  }}
-/>
-
+        customers={allCustomers}
+        onFilter={(status) => {
+          setFilterStatus(status);
+          setFilterCreatedBy(null);
+          setFilterAssignedTo(null);
+        }}
+      />
 
       {/* ✅ Assigned To Cards */}
       <AssignedToStatsCards onFilter={(userId) => {
-  setFilterAssignedTo(userId);
-  setFilterCreatedBy(null); // ✅ reset
-  setFilterStatus(null);    // ✅ reset
-}} />
-
+        setFilterAssignedTo(userId);
+        setFilterCreatedBy(null);
+        setFilterStatus(null);
+      }} />
 
       {/* ✅ Customer Table */}
       <CustomerTable
-      customers={allCustomers}
-      onAddClick={() => {
-        setShowAddModal(true);
-        setEditingCustomer(null);
-      }}
-      onEditClick={handleEditClick}
-      filterStatus={filterStatus}
-      filterCreatedBy={filterCreatedBy}
-      filterAssignedTo={filterAssignedTo}
-      filterCreatedDate={filterCreatedDate}
-      setFilterCreatedDate={setFilterCreatedDate}
-      onRefresh={fetchCustomers}
+        customers={allCustomers}
+        onAddClick={() => {
+          setShowAddModal(true);
+          setEditingCustomer(null);
+        }}
+        onEditClick={handleEditClick}
+        filterStatus={filterStatus}
+        filterCreatedBy={filterCreatedBy}
+        filterAssignedTo={filterAssignedTo}
+        filterCreatedDate={filterCreatedDate}
+        setFilterCreatedDate={setFilterCreatedDate}
+        onRefresh={fetchCustomers}
       />
 
+      {/* ✅ Add Modal */}
+      {user?.permissions.includes("Permissions.Customers.Create") && (
+        <AddCustomerForm
+          isOpen={showAddModal}
+          onClose={() => setShowAddModal(false)}
+          onSuccess={handleSuccess}
+          users={users}
+        />
+      )}
 
-      {/* ✅ Add/Edit Modals */}
-      <AddCustomerForm
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onSuccess={handleSuccess}
-        users={users}
-      />
-
-      <EditCustomerForm
-        isOpen={showEditModal}
-        editingCustomer={editingCustomer}
-        onClose={() => setShowEditModal(false)}
-        onSuccess={handleSuccess}
-        users={users}
-      />
+      {/* ✅ Edit Modal */}
+      {user?.permissions.includes("Permissions.Customers.Edit") && (
+        <EditCustomerForm
+          isOpen={showEditModal}
+          editingCustomer={editingCustomer}
+          onClose={() => setShowEditModal(false)}
+          onSuccess={handleSuccess}
+          users={users}
+        />
+      )}
+      
     </div>
   );
 };

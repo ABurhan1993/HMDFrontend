@@ -9,42 +9,39 @@ import {
   DocsIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
+import { useUser } from "@/hooks/useUser";
 import hmdLogo from "@/assets/hmd-pdf.png";
 
 const navItems = [
   {
     icon: <GridIcon />,
     name: "Dashboard",
-    subItems: [{ name: "Dashboard Home", path: "/", pro: false }],
+    subItems: [{ name: "Dashboard Home", path: "/", pro: false, requiredPermission: "" }],
   },
   {
     icon: <UserCircleIcon />,
     name: "Customers",
-    subItems: [{ name: "Customers", path: "/customers", pro: false }],
+    subItems: [{ name: "Customers", path: "/customers", pro: false, requiredPermission: "Permissions.Customers.View" }],
   },
   {
-    icon: <DocsIcon  />,
+    icon: <DocsIcon />,
     name: "Inquiries",
-    subItems: [
-      { name: "Inquiry List", path: "/inquiries", pro: false },
-      // ممكن نضيف لاحقًا: Inquiry Add, Escalate, etc.
-    ],
+    subItems: [{ name: "Inquiry List", path: "/inquiries", pro: false, requiredPermission: "Permissions.Inquiries.View" }],
   },
   {
     icon: <PlugInIcon />,
     name: "Settings",
     subItems: [
-      { name: "User List", path: "/users", pro: false },
-      { name: "Role List", path: "/roles", pro: false }, // صفحة لاحقًا
+      { name: "User List", path: "/users", pro: false, requiredPermission: "Permissions.Users.View" },
+      { name: "Role List", path: "/roles", pro: false, requiredPermission: "Permissions.Roles.View" },
     ],
   },
-  
 ];
-
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const location = useLocation();
+  const user = useUser();
 
   const [openSubmenu, setOpenSubmenu] = useState<{ index: number } | null>(null);
   const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>({});
@@ -107,56 +104,61 @@ const AppSidebar: React.FC = () => {
           {isExpanded || isHovered || isMobileOpen ? "Menu" : <HorizontaLDots />}
         </h2>
         <ul className="flex flex-col gap-4">
-          {navItems.map((nav, index) => (
-            <li key={nav.name}>
-              {nav.subItems && (
-                <>
-                  <button
-                    onClick={() => handleSubmenuToggle(index)}
-                    className="flex items-center w-full gap-2 text-gray-700 dark:text-gray-300 hover:text-brand-500"
-                  >
-                    {nav.icon}
-                    {(isExpanded || isHovered || isMobileOpen) && (
-                      <>
-                        <span>{nav.name}</span>
-                        <ChevronDownIcon
-                          className={`ml-auto w-5 h-5 transition-transform ${
-                            openSubmenu?.index === index ? "rotate-180 text-brand-500" : ""
-                          }`}
-                        />
-                      </>
-                    )}
-                  </button>
+          {navItems.map((nav, index) => {
+            const visibleSubItems = nav.subItems.filter(
+              (subItem) =>
+                !subItem.requiredPermission ||
+                user?.permissions.includes(subItem.requiredPermission)
+            );
 
-                  <div
-                    ref={(el) => {
-                      subMenuRefs.current[`submenu-${index}`] = el;
-                    }}
-                    className="overflow-hidden transition-all duration-300"
-                    style={{
-                      height:
-                        openSubmenu?.index === index ? subMenuHeight[`submenu-${index}`] : 0,
-                    }}
-                  >
-                    <ul className="mt-2 space-y-1 ml-9">
-                      {nav.subItems.map((subItem) => (
-                        <li key={subItem.name}>
-                          <Link
-                            to={subItem.path}
-                            className={`block py-1 text-gray-600 dark:text-gray-300 hover:text-brand-500 ${
-                              isActive(subItem.path) ? "text-brand-500 font-bold" : ""
-                            }`}
-                          >
-                            {subItem.name}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </>
-              )}
-            </li>
-          ))}
+            if (visibleSubItems.length === 0) return null; // 🔥 اخفي القسم إذا لا يملك أي صلاحية
+
+            return (
+              <li key={nav.name}>
+                <button
+                  onClick={() => handleSubmenuToggle(index)}
+                  className="flex items-center w-full gap-2 text-gray-700 dark:text-gray-300 hover:text-brand-500"
+                >
+                  {nav.icon}
+                  {(isExpanded || isHovered || isMobileOpen) && (
+                    <>
+                      <span>{nav.name}</span>
+                      <ChevronDownIcon
+                        className={`ml-auto w-5 h-5 transition-transform ${
+                          openSubmenu?.index === index ? "rotate-180 text-brand-500" : ""
+                        }`}
+                      />
+                    </>
+                  )}
+                </button>
+
+                <div
+                  ref={(el) => {
+                    subMenuRefs.current[`submenu-${index}`] = el;
+                  }}
+                  className="overflow-hidden transition-all duration-300"
+                  style={{
+                    height: openSubmenu?.index === index ? subMenuHeight[`submenu-${index}`] : 0,
+                  }}
+                >
+                  <ul className="mt-2 space-y-1 ml-9">
+                    {visibleSubItems.map((subItem) => (
+                      <li key={subItem.name}>
+                        <Link
+                          to={subItem.path}
+                          className={`block py-1 text-gray-600 dark:text-gray-300 hover:text-brand-500 ${
+                            isActive(subItem.path) ? "text-brand-500 font-bold" : ""
+                          }`}
+                        >
+                          {subItem.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       </nav>
     </aside>

@@ -3,6 +3,7 @@ import Input from "../form/input/InputField";
 import Select from "../form/Select";
 import Button from "../ui/button/Button";
 import axios from "../utils/axios";
+import { toast } from 'react-hot-toast';
 
 interface AddUserFormProps {
   isOpen: boolean;
@@ -56,7 +57,7 @@ const AddUserForm = ({ isOpen, onClose, onSuccess }: AddUserFormProps) => {
       onSuccess();
       onClose();
     } catch (err) {
-      alert("Failed to create user.");
+      toast.error("Failed to create user.");
     }
   };
 

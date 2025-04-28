@@ -6,6 +6,7 @@ import Button from "../ui/button/Button";
 import DateTimePicker from "../form/date-time-picker";
 import type { UserDto } from "@/types/UserDto";
 import axios from "@/components/utils/axios";
+import { toast } from 'react-hot-toast';
 
 interface AddCustomerFormProps {
   isOpen: boolean;
@@ -76,7 +77,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     onSuccess();
     onClose();
   } catch (err) {
-    alert("Failed to add customer.");
+    toast.error("Failed to add customer.");
   }
 };
 

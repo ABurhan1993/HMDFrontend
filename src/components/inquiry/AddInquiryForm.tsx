@@ -6,6 +6,7 @@ import Button from "../ui/button/Button";
 import axios from "@/components/utils/axios";
 import { UserIcon, HomeIcon, ClipboardIcon } from "@heroicons/react/24/outline";
 import { UserDto } from "@/types/UserDto";
+import { toast } from 'react-hot-toast';
 
 const steps = [
   { title: "Customer Information", icon: <UserIcon className="w-5 h-5 inline-block mr-1" /> },
@@ -96,7 +97,7 @@ const AddInquiryForm = ({ isOpen, onClose, onSuccess }: any) => {
 
   const handleNext = () => {
     if (!validateStep()) {
-      alert("Please complete the required fields before continuing.");
+      toast.error("Please complete the required fields before continuing.");
       return;
     }
     if (step < steps.length - 1) setStep((prev) => prev + 1);
@@ -114,7 +115,7 @@ const AddInquiryForm = ({ isOpen, onClose, onSuccess }: any) => {
       onSuccess();
       onClose();
     } catch {
-      alert("Failed to submit inquiry.");
+      toast.error("Failed to submit inquiry.");
     } finally {
       setSubmitting(false);
     }

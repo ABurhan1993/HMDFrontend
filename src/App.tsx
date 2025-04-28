@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Toaster } from "react-hot-toast"; // ✅ استوردنا التوستر
 import SignIn from "./pages/AuthPages/SignIn";
 import NotFound from "./pages/OtherPage/NotFound";
 import UserProfiles from "./pages/UserProfiles";
@@ -22,7 +23,7 @@ import CustomerList from "./pages/Customers/CustomerList";
 import UserList from "@/pages/Users/UserList";
 import InquiryList from "./pages/Inquiry/InquiryList";
 import "react-datepicker/dist/react-datepicker.css";
-
+import RoleList from "@/pages/Roles/RoleList";
 
 export default function App() {
   return (
@@ -49,7 +50,7 @@ export default function App() {
             <Route path="/bar-chart" element={<BarChart />} />
             <Route path="/users" element={<UserList />} />
             <Route path="/inquiries" element={<InquiryList />} />
-
+            <Route path="/roles" element={<RoleList />} />
           </Route>
         </Route>
 
@@ -57,6 +58,9 @@ export default function App() {
         <Route path="/signin" element={<SignIn />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+
+      {/* 🔥 نضيف التوستر هون تحت كل الرواتر */}
+      <Toaster position="top-right" />
     </Router>
   );
 }

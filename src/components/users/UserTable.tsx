@@ -1,4 +1,4 @@
-import { PencilIcon } from "@heroicons/react/24/outline";
+import { PencilIcon, KeyIcon } from "@heroicons/react/24/outline"; 
 import Button from "@/components/ui/button/Button";
 import { CustomPagination } from "@/components/ui/Pagination/CustomPagination";
 import { useUser } from "@/hooks/useUser";
@@ -16,6 +16,7 @@ interface Props {
   data: User[];
   onEditClick?: (user: User) => void;
   onAddClick: () => void;
+  onResetPasswordClick?: (user: User) => void;
   search: string;
   setSearch: (val: string) => void;
   currentPage: number;
@@ -27,6 +28,7 @@ const UserTable = ({
   data,
   onEditClick,
   onAddClick,
+  onResetPasswordClick,
   search,
   setSearch,
   currentPage,
@@ -49,7 +51,9 @@ const UserTable = ({
         </div>
 
         {/* Right: Add Button */}
-        <Button onClick={onAddClick}>+ New User</Button>
+        {user?.permissions.includes("Permissions.Users.Create") && (
+          <Button onClick={onAddClick}>+ New User</Button>
+        )}
       </div>
 
       <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
@@ -76,15 +80,25 @@ const UserTable = ({
               <td className="px-6 py-4">{u.phone}</td>
               <td className="px-6 py-4">{u.roleName}</td>
               <td className="px-6 py-4">{u.branchName}</td>
-              <td className="px-6 py-4">
+              <td className="px-6 py-4 flex gap-2 items-center">
                 {user?.permissions.includes("Permissions.Users.Edit") && (
-                  <button
-                    className="text-yellow-500 hover:text-yellow-600"
-                    onClick={() => onEditClick?.(u)}
-                    title="Edit"
-                  >
-                    <PencilIcon className="w-5 h-5" />
-                  </button>
+                  <>
+                    <button
+                      className="text-yellow-500 hover:text-yellow-600"
+                      onClick={() => onEditClick?.(u)}
+                      title="Edit"
+                    >
+                      <PencilIcon className="w-5 h-5" />
+                    </button>
+
+                    <button
+                      className="text-blue-500 hover:text-blue-600"
+                      onClick={() => onResetPasswordClick?.(u)}
+                      title="Reset Password"
+                    >
+                      <KeyIcon className="w-5 h-5" />
+                    </button>
+                  </>
                 )}
               </td>
             </tr>
@@ -93,13 +107,12 @@ const UserTable = ({
       </table>
 
       <div className="mt-4">
-      <CustomPagination
-  currentPage={currentPage}
-  onPageChange={setCurrentPage}
-  itemsPerPage={20} // أو أي عدد حسب عدد السطور بالصفحة
-  totalItems={data.length}
-/>
-
+        <CustomPagination
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+          itemsPerPage={20}
+          totalItems={data.length}
+        />
       </div>
     </div>
   );

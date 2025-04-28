@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import axios from "@/components/utils/axios";
 import UserTable from "@/components/users/UserTable";
 import AddUserForm from "@/components/users/AddUserForm";
+import ResetPasswordModal from "@/components/users/ResetPasswordModal"; // 🔥 استيراد المودال الجديد
+import { toast } from 'react-hot-toast';
 
 interface User {
   id: string;
@@ -16,6 +18,7 @@ const UserList = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [resetPasswordUserId, setResetPasswordUserId] = useState<string | null>(null); // 🔥 يوزر عم نعملو reset
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 10;
 
@@ -24,7 +27,7 @@ const UserList = () => {
       const res = await axios.get("/User/all-users");
       setUsers(res.data);
     } catch {
-      alert("Failed to fetch users");
+      toast.error("Failed to fetch users");
     }
   };
 
@@ -53,12 +56,21 @@ const UserList = () => {
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         totalPages={totalPages}
+        onResetPasswordClick={(user) => setResetPasswordUserId(user.id)} // 🔥 مربوطة هون
       />
 
       {/* مودال الإضافة */}
       <AddUserForm
         isOpen={showForm}
         onClose={() => setShowForm(false)}
+        onSuccess={fetchUsers}
+      />
+
+      {/* مودال إعادة تعيين كلمة السر */}
+      <ResetPasswordModal
+        isOpen={!!resetPasswordUserId}
+        onClose={() => setResetPasswordUserId(null)}
+        userId={resetPasswordUserId || ""}
         onSuccess={fetchUsers}
       />
     </div>
