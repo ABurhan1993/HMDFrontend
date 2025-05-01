@@ -4,6 +4,7 @@ import Select from "../form/Select";
 import Button from "../ui/button/Button";
 import axios from "../utils/axios";
 import { toast } from 'react-hot-toast';
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 
 interface AddUserFormProps {
   isOpen: boolean;
@@ -12,14 +13,14 @@ interface AddUserFormProps {
 }
 
 interface Role {
-    id: string;
-    name: string;
-  }
+  id: string;
+  name: string;
+}
 
 interface Branch {
-    id: number;
-    name: string;
-  }
+  id: number;
+  name: string;
+}
 
 const initialFormState = {
   firstName: "",
@@ -29,13 +30,16 @@ const initialFormState = {
   password: "",
   roleId: "",
   branchId: "",
+  isNotificationEnabled: false,
 };
 
 const AddUserForm = ({ isOpen, onClose, onSuccess }: AddUserFormProps) => {
   const [formData, setFormData] = useState({ ...initialFormState });
   const [roles, setRoles] = useState([]);
   const [branches, setBranches] = useState([]);
-  
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [submitted, setSubmitted] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     axios.get("/Role/all").then((res) => setRoles(res.data));
@@ -49,8 +53,27 @@ const AddUserForm = ({ isOpen, onClose, onSuccess }: AddUserFormProps) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const validate = () => {
+    const newErrors: { [key: string]: string } = {};
+    if (!formData.firstName.trim()) newErrors.firstName = "First name is required.";
+    if (!formData.email.trim()) newErrors.email = "Email is required.";
+    //if (!formData.phone.trim()) newErrors.phone = "Phone is required.";
+    if (!formData.password.trim()) newErrors.password = "Password is required.";
+    else if (formData.password.length < 8 || !/\d/.test(formData.password) || !/[a-zA-Z]/.test(formData.password)) {
+      newErrors.password = "Password must be at least 8 characters long and contain both letters and numbers.";
+    }
+    return newErrors;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitted(true);
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
     try {
       await axios.post("/User/create", formData);
       setFormData({ ...initialFormState });
@@ -62,7 +85,11 @@ const AddUserForm = ({ isOpen, onClose, onSuccess }: AddUserFormProps) => {
   };
 
   useEffect(() => {
-    if (!isOpen) setFormData({ ...initialFormState });
+    if (!isOpen) {
+      setFormData({ ...initialFormState });
+      setSubmitted(false);
+      setErrors({});
+    }
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -76,43 +103,102 @@ const AddUserForm = ({ isOpen, onClose, onSuccess }: AddUserFormProps) => {
             <button
               type="button"
               onClick={onClose}
-              className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+              className="text-gray-400 hover:text-red-500"
             >
               ✕
             </button>
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
-            {/* الاسم الأول والأخير */}
             <div className="grid md:grid-cols-2 md:gap-6">
-              <Input name="firstName" value={formData.firstName} onChange={handleChange} placeholder="First Name"/>
+              <div>
+                <Input name="firstName" value={formData.firstName} onChange={handleChange} placeholder="First Name" />
+                {submitted && errors.firstName && <p className="text-red-500 text-xs">{errors.firstName}</p>}
+              </div>
               <Input name="lastName" value={formData.lastName} onChange={handleChange} placeholder="Last Name" />
             </div>
 
-            {/* الإيميل والهاتف */}
             <div className="grid md:grid-cols-2 md:gap-6">
-              <Input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email" required />
-              <Input name="phone" value={formData.phone} onChange={handleChange} placeholder="Phone" required />
+              <div>
+                <Input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email" />
+                {submitted && errors.email && <p className="text-red-500 text-xs">{errors.email}</p>}
+              </div>
+              <div>
+                <Input name="phone" value={formData.phone} onChange={handleChange} placeholder="Phone" />
+                {/* {submitted && errors.phone && <p className="text-red-500 text-xs">{errors.phone}</p>} */}
+              </div>
             </div>
 
-            {/* كلمة المرور */}
-            <Input type="password" name="password" value={formData.password} onChange={handleChange} placeholder="Password" required />
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+              >
+                {showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+              </button>
+            </div>
+            {submitted && errors.password && (
+              <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+            )}
 
-            {/* الدور والفرع */}
+
             <div className="grid md:grid-cols-2 md:gap-6">
-            <Select
-  options={roles.map((r: Role) => ({ value: r.id.toString(), label: r.name }))}
-  placeholder="Select Role"
-  onChange={(value) => setFormData((prev) => ({ ...prev, roleId: value }))}
-  defaultValue={formData.roleId}
-/>
+              <div>
+                <Select
+                  options={roles.map((r: Role) => ({ value: r.id.toString(), label: r.name }))}
+                  placeholder="Select Role"
+                  onChange={(value) => setFormData((prev) => ({ ...prev, roleId: value }))}
+                  defaultValue={formData.roleId}
+                />
+                {submitted && !formData.roleId && (
+                  <p className="text-red-500 text-xs mt-1">Role is required.</p>
+                )}
+              </div>
+              <div>
+                <Select
+                  options={branches.map((b: Branch) => ({ value: b.id.toString(), label: b.name }))}
+                  placeholder="Select Branch"
+                  onChange={(value) => setFormData((prev) => ({ ...prev, branchId: value }))}
+                  defaultValue={formData.branchId}
+                />
+                {submitted && !formData.branchId && (
+                  <p className="text-red-500 text-xs mt-1">Branch is required.</p>
+                )}
+              </div>
+            </div>
 
-<Select
-  options={branches.map((b: Branch) => ({ value: b.id.toString(), label: b.name }))}
-  placeholder="Select Branch"
-  onChange={(value) => setFormData((prev) => ({ ...prev, branchId: value }))}
-  defaultValue={formData.branchId}
-/>
+
+            <div className="flex items-center justify-between p-2 rounded bg-gray-100 dark:bg-gray-700">
+              <label htmlFor="notifToggle" className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                Enable Notifications
+              </label>
+              <button
+                type="button"
+                id="notifToggle"
+                role="switch"
+                aria-checked={formData.isNotificationEnabled}
+                onClick={() =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    isNotificationEnabled: !prev.isNotificationEnabled,
+                  }))
+                }
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${formData.isNotificationEnabled ? "bg-blue-600" : "bg-gray-300"
+                  }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.isNotificationEnabled ? "translate-x-6" : "translate-x-1"
+                    }`}
+                />
+              </button>
             </div>
 
             <Button className="w-full" size="sm">Save User</Button>

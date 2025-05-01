@@ -1,4 +1,4 @@
-import { PencilIcon, KeyIcon } from "@heroicons/react/24/outline"; 
+import { PencilIcon, KeyIcon, TrashIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
 import Button from "@/components/ui/button/Button";
 import { CustomPagination } from "@/components/ui/Pagination/CustomPagination";
 import { useUser } from "@/hooks/useUser";
@@ -17,6 +17,8 @@ interface Props {
   onEditClick?: (user: User) => void;
   onAddClick: () => void;
   onResetPasswordClick?: (user: User) => void;
+  onDeleteClick?: (user: User) => void;
+  onPermissionsClick?: (user: User) => void; // ✅ جديد
   search: string;
   setSearch: (val: string) => void;
   currentPage: number;
@@ -29,6 +31,8 @@ const UserTable = ({
   onEditClick,
   onAddClick,
   onResetPasswordClick,
+  onDeleteClick,
+  onPermissionsClick,
   search,
   setSearch,
   currentPage,
@@ -82,24 +86,46 @@ const UserTable = ({
               <td className="px-6 py-4">{u.branchName}</td>
               <td className="px-6 py-4 flex gap-2 items-center">
                 {user?.permissions.includes("Permissions.Users.Edit") && (
-                  <>
-                    <button
-                      className="text-yellow-500 hover:text-yellow-600"
-                      onClick={() => onEditClick?.(u)}
-                      title="Edit"
-                    >
-                      <PencilIcon className="w-5 h-5" />
-                    </button>
-
-                    <button
-                      className="text-blue-500 hover:text-blue-600"
-                      onClick={() => onResetPasswordClick?.(u)}
-                      title="Reset Password"
-                    >
-                      <KeyIcon className="w-5 h-5" />
-                    </button>
-                  </>
+                  <button
+                    className="text-yellow-500 hover:text-yellow-600"
+                    onClick={() => onEditClick?.(u)}
+                    title="Edit"
+                  >
+                    <PencilIcon className="w-5 h-5" />
+                  </button>
                 )}
+
+                {user?.permissions.includes("Permissions.Users.Delete") && (
+                  <button
+                    className="text-red-500 hover:text-red-600"
+                    onClick={() => onDeleteClick?.(u)}
+                    title="Delete"
+                  >
+                    <TrashIcon className="w-5 h-5" />
+                  </button>
+                )}
+
+                {user?.permissions.includes("Permissions.Users.Edit") && (
+                  <button
+                    className="text-blue-500 hover:text-blue-600"
+                    onClick={() => onResetPasswordClick?.(u)}
+                    title="Reset Password"
+                  >
+                    <KeyIcon className="w-5 h-5" />
+                  </button>
+                )}
+                {user?.permissions.includes("Permissions.Users.Edit") && (
+                  <button
+                    className="text-purple-500 hover:text-purple-700"
+                    title="Permissions"
+                    onClick={() => onPermissionsClick?.(u)}
+                  >
+                    <ShieldCheckIcon className="w-5 h-5" />
+                  </button>
+                )}
+
+
+
               </td>
             </tr>
           ))}

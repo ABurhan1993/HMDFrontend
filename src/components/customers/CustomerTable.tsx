@@ -9,16 +9,14 @@ import {
 } from "@heroicons/react/24/outline";
 import { useUser } from "@/hooks/useUser";
 import type { CustomerData } from "@/types/customer";
-import axios from "@/components/utils/axios";
 import { Fragment } from "react";
 import { format } from "date-fns";
-import { toast } from 'react-hot-toast';
-
 
 interface CustomerTableProps {
   customers: CustomerData[];
   onAddClick: () => void;
   onEditClick: (customer: CustomerData) => void;
+  onDeleteClick: (customer: CustomerData) => void;
   filterStatus?: string | null;
   filterCreatedBy?: string | null;
   filterAssignedTo?: string | null;
@@ -31,17 +29,15 @@ export default function CustomerTable({
   customers,
   onAddClick,
   onEditClick,
+  onDeleteClick,
   filterStatus,
   filterCreatedBy,
   filterAssignedTo,
   filterCreatedDate,
   setFilterCreatedDate,
-  onRefresh,
 }: CustomerTableProps) {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [customerToDelete, setCustomerToDelete] = useState<CustomerData | null>(null);
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
   const itemsPerPage = 20;
   const user = useUser();
@@ -124,24 +120,12 @@ export default function CustomerTable({
     currentPage * itemsPerPage
   );
 
-  const handleDelete = async () => {
-    if (!customerToDelete) return;
-    try {
-      await axios.delete(`/customer/delete?id=${customerToDelete.customerId}`);
-      setShowDeleteModal(false);
-      setCustomerToDelete(null);
-      onRefresh();
-    } catch {
-      toast.error("Failed to delete customer");
-    }
-  };
-
   return (
     <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
       <div className="flex items-center justify-between flex-wrap md:flex-row space-y-4 md:space-y-0 pb-4 bg-white dark:bg-gray-900">
-      {user?.permissions.includes("Permissions.Customers.Create") && (
-  <Button onClick={onAddClick} size="sm">New Customer</Button>
-)}
+        {user?.permissions.includes("Permissions.Customers.Create") && (
+          <Button onClick={onAddClick} size="sm">New Customer</Button>
+        )}
 
         <div className="flex items-center gap-3">
           <div className="relative">
@@ -157,15 +141,15 @@ export default function CustomerTable({
               📅 {filterCreatedDate === "today"
                 ? "Today"
                 : filterCreatedDate === "week"
-                ? "Last 7 Days"
-                : filterCreatedDate === "month"
-                ? "This Month"
-                : "All Dates"}
+                  ? "Last 7 Days"
+                  : filterCreatedDate === "month"
+                    ? "This Month"
+                    : "All Dates"}
               <svg className="w-2.5 h-2.5 ms-2.5" aria-hidden="true" fill="none" viewBox="0 0 10 6">
                 <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 4 4 4-4" />
               </svg>
             </button>
-  
+
             <div
               id="dropdownRadio"
               className="z-10 hidden absolute mt-2 w-48 bg-white divide-y divide-gray-100 rounded-lg shadow-sm dark:bg-gray-700 dark:divide-gray-600"
@@ -191,7 +175,7 @@ export default function CustomerTable({
                         name="filter-radio"
                         className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 dark:bg-gray-700 dark:border-gray-600"
                         checked={filterCreatedDate === option.value}
-                        onChange={() => {}}
+                        onChange={() => { }}
                       />
                       <span className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
                         {option.label}
@@ -202,7 +186,7 @@ export default function CustomerTable({
               </ul>
             </div>
           </div>
-  
+
           {/* ✅ حقل البحث */}
           <input
             type="text"
@@ -239,13 +223,13 @@ export default function CustomerTable({
                 <td className="px-6 py-4">{c.customerContact}</td>
                 <td className="px-6 py-4">{c.contactStatusName}</td>
                 <td className="px-6 py-4">{c.createdDate?.split("T")[0] || "-"}</td>
-                
 
-<td className="px-6 py-4">
-  {c.customerNextMeetingDate
-    ? `${c.customerNextMeetingDate.slice(0, 10)} - ${format(new Date(c.customerNextMeetingDate), "HH:mm")}`
-    : "-"}
-</td>
+
+                <td className="px-6 py-4">
+                  {c.customerNextMeetingDate
+                    ? `${c.customerNextMeetingDate.slice(0, 10)} - ${format(new Date(c.customerNextMeetingDate), "HH:mm")}`
+                    : "-"}
+                </td>
 
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
@@ -255,14 +239,18 @@ export default function CustomerTable({
                       </button>
                     )}
                     {user?.permissions.includes("Permissions.Customers.Delete") && (
-  <button
-    className="text-red-500 hover:text-red-600"
-    title="Delete"
-    onClick={(e) => { e.stopPropagation(); setCustomerToDelete(c); setShowDeleteModal(true); }}
-  >
-    <TrashIcon className="w-5 h-5" />
-  </button>
-)}
+                      <button
+                        className="text-red-500 hover:text-red-600"
+                        title="Delete"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteClick(c);
+                        }}
+                        
+                      >
+                        <TrashIcon className="w-5 h-5" />
+                      </button>
+                    )}
 
                   </div>
                 </td>
@@ -310,6 +298,7 @@ export default function CustomerTable({
           ))}
         </tbody>
       </table>
+
       <div className="mt-4">
         <CustomPagination
           currentPage={currentPage}
@@ -318,23 +307,6 @@ export default function CustomerTable({
           onPageChange={setCurrentPage}
         />
       </div>
-      {showDeleteModal && customerToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-lg max-w-md w-full">
-            <h3 className="text-lg text-gray-700 dark:text-gray-200 mb-4 text-center">
-              Are you sure you want to delete this customer?
-            </h3>
-            <div className="flex justify-center gap-4">
-              <button className="text-white bg-red-600 hover:bg-red-800 px-5 py-2 rounded-lg text-sm" onClick={handleDelete}>
-                Yes, I'm sure
-              </button>
-              <button className="px-5 py-2 text-sm border rounded-lg bg-white hover:bg-gray-100 dark:bg-gray-800 dark:text-white" onClick={() => setShowDeleteModal(false)}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
