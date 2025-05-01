@@ -45,11 +45,18 @@ const UserList = () => {
   const fetchUsers = async () => {
     try {
       const res = await axios.get("/User/all-users");
-      setUsers(res.data);
+  
+      // ⬇️ ترتيب عكسي حسب createdDate (مفترض أن القيمة موجودة)
+      const sorted = [...res.data].sort(
+        (a: any, b: any) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()
+      );
+  
+      setUsers(sorted);
     } catch {
       toast.error("Failed to fetch users");
     }
   };
+  
 
   const handleDeleteUser = (user: User) => {
     setUserToDelete(user);
