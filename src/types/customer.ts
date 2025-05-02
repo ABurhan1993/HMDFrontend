@@ -34,6 +34,7 @@ export interface CustomerData {
     escalatedOn?: string;
     createdDate: string;
     commentDetail?: string;
+    UserId?: string;
   }
   
   export interface CustomerCountByUser {

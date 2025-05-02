@@ -73,26 +73,30 @@ const CustomerList = () => {
 
   return (
     <div className="p-4 space-y-6">
-      <CreatedByStatsCards onFilter={(userId) => {
-        setFilterCreatedBy(userId);
-        setFilterAssignedTo(null);
-        setFilterStatus(null);
-      }} />
+      <CreatedByStatsCards
+  onFilter={(userId) => {
+    setFilterCreatedBy(userId || null); // ← دعم null لما يضغط All
+  }}
+/>
 
-      <CustomerStatsCards
-        customers={allCustomers}
-        onFilter={(status) => {
-          setFilterStatus(status);
-          setFilterCreatedBy(null);
-          setFilterAssignedTo(null);
-        }}
-      />
 
-      <AssignedToStatsCards onFilter={(userId) => {
-        setFilterAssignedTo(userId);
-        setFilterCreatedBy(null);
-        setFilterStatus(null);
-      }} />
+<CustomerStatsCards
+  customers={allCustomers}
+  selectedCreatedById={filterCreatedBy}
+  onFilter={(status) => {
+    setFilterStatus(status || null); // ← لو ضغط "All" يرجّع null
+  }}
+/>
+
+
+
+<AssignedToStatsCards
+  onFilter={(userId) => {
+    setFilterAssignedTo(userId);
+    setFilterCreatedBy(null); // ← لضمان عدم تداخل الفلاتر
+    setFilterStatus(null);
+  }}
+/>
 
       <CustomerTable
         customers={allCustomers}

@@ -18,44 +18,47 @@ interface StatsCardProps {
 }
 
 const StatsCard = ({ label, count, icon, onClick }: StatsCardProps) => (
-    <div
-      onClick={onClick}
-      className="cursor-pointer transition hover:scale-[1.02]"
-    >
-      <div className="flex flex-col justify-between items-center text-center bg-white dark:bg-gray-900 rounded-xl shadow border border-gray-200 dark:border-gray-800 p-4 h-[160px] w-full max-w-[160px] mx-auto overflow-hidden">
-        {/* الأيقونة */}
-        <div className="flex items-center justify-center">
-          <div className="w-8 h-8 sm:w-10 sm:h-10">{icon}</div>
+  <div
+    onClick={onClick}
+    className="cursor-pointer transition hover:scale-[1.02]"
+  >
+    <div className="flex flex-col justify-between items-center text-center bg-white dark:bg-gray-900 rounded-xl shadow border border-gray-200 dark:border-gray-800 p-4 h-[160px] w-full max-w-[160px] mx-auto overflow-hidden">
+      <div className="flex items-center justify-center">
+        <div className="w-8 h-8 sm:w-10 sm:h-10">{icon}</div>
+      </div>
+      <div className="w-full border-t border-gray-200 dark:border-gray-700 my-2" />
+      <div className="flex flex-col items-center justify-end flex-grow">
+        <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-tight mb-1">
+          {label}
         </div>
-  
-        {/* الفاصل */}
-        <div className="w-full border-t border-gray-200 dark:border-gray-700 my-2" />
-  
-        {/* النصوص */}
-        <div className="flex flex-col items-center justify-end flex-grow">
-          <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-tight mb-1">
-            {label}
-          </div>
-          <div className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white leading-tight">
-            {count}
-          </div>
+        <div className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white leading-tight">
+          {count}
         </div>
       </div>
     </div>
-  );
-  
+  </div>
+);
 
 interface CustomerStatsCardsProps {
   customers: CustomerData[];
   onFilter: (type: string) => void;
+  selectedCreatedById?: string | null;
 }
 
-const CustomerStatsCards = ({ customers, onFilter }: CustomerStatsCardsProps) => {
+const CustomerStatsCards = ({
+  customers,
+  onFilter,
+  selectedCreatedById,
+}: CustomerStatsCardsProps) => {
+  const filteredCustomers = useMemo(() => {
+    if (!selectedCreatedById) return customers;
+    return customers.filter((c) => c.userId === selectedCreatedById);
+  }, [customers, selectedCreatedById]);
+
   const stats = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    let total = customers.length;
     let contacted = 0;
     let needToContact = 0;
     let needToFollowUp = 0;
@@ -65,7 +68,7 @@ const CustomerStatsCards = ({ customers, onFilter }: CustomerStatsCardsProps) =>
     let needToContactDelayed = 0;
     let needToFollowUpDelayed = 0;
 
-    for (const c of customers) {
+    for (const c of filteredCustomers) {
       const status = c.contactStatusName;
       const meetingDate = c.customerNextMeetingDate
         ? new Date(c.customerNextMeetingDate)
@@ -94,7 +97,6 @@ const CustomerStatsCards = ({ customers, onFilter }: CustomerStatsCardsProps) =>
     }
 
     return {
-      total,
       contacted,
       needToContact,
       needToFollowUp,
@@ -104,12 +106,12 @@ const CustomerStatsCards = ({ customers, onFilter }: CustomerStatsCardsProps) =>
       needToContactDelayed,
       needToFollowUpDelayed,
     };
-  }, [customers]);
+  }, [filteredCustomers]);
 
   return (
     <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 sm:gap-5 xl:gap-6 p-4 sm:p-6">
       {[
-        { label: "All Customers", count: stats.total, icon: <UserGroupIcon className="w-6 h-6 text-gray-800 dark:text-white" />, filter: "all" },
+        { label: "All Customers", count: filteredCustomers.length, icon: <UserGroupIcon className="w-6 h-6 text-gray-800 dark:text-white" />, filter: "" },
         { label: "Contacted", count: stats.contacted, icon: <CheckCircleIcon className="w-6 h-6 text-green-600 dark:text-green-400" />, filter: "Contacted" },
         { label: "Need to Contact", count: stats.needToContact, icon: <PhoneIcon className="w-6 h-6 text-gray-800 dark:text-white" />, filter: "NeedToContact" },
         { label: "Need Follow Up", count: stats.needToFollowUp, icon: <ClockIcon className="w-6 h-6 text-gray-800 dark:text-white" />, filter: "NeedToFollowUp" },
