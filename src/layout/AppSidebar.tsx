@@ -111,7 +111,10 @@ const AppSidebar: React.FC = () => {
                 user?.permissions.includes(subItem.requiredPermission)
             );
 
-            if (visibleSubItems.length === 0) return null; // 🔥 اخفي القسم إذا لا يملك أي صلاحية
+            if (visibleSubItems.length === 0) {
+              console.warn("No visible items for:", nav.name, "User permissions:", user?.permissions);
+              return null;
+            } // 🔥 اخفي القسم إذا لا يملك أي صلاحية
 
             return (
               <li key={nav.name}>

@@ -31,9 +31,9 @@ export function getUserFromToken(): UserInfo | null {
         branchId: payload.BranchId,
         userImageUrl: payload.UserImageUrl || "",
         isNotificationEnabled: payload.IsNotificationEnabled === "true",
-        permissions: Array.isArray(payload.Permission)
-          ? payload.Permission
-          : [payload.Permission].filter(Boolean),
+        permissions: Array.isArray(payload.permission)
+          ? payload.permission
+          : [payload.permission].filter(Boolean),
       };
     } catch (error) {
       console.error("Failed to parse token:", error);

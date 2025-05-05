@@ -10,7 +10,7 @@ export const useSignalRNotification = (
     if (!token) return;
 
     const connection = new HubConnectionBuilder()
-      .withUrl("https://https://www.hmdserver.com/hubs/notification", {
+      .withUrl("https://www.hmdserver.com/hubs/notification", {
         accessTokenFactory: () => token,
       })
       .withAutomaticReconnect()
