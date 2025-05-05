@@ -15,32 +15,33 @@ export interface UserInfo {
 }
 
 export function getUserFromToken(): UserInfo | null {
-    const token = localStorage.getItem("token");
-    if (!token) return null;
-  
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      return {
-        userId: payload.sub || payload["nameid"],
-        fullName: payload.Name,
-        firstName: payload.FirstName,
-        lastName: payload.LastName,
-        email: payload.email,
-        phone: payload.Phone,
-        role: payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || payload.role,
-        branchId: payload.BranchId,
-        userImageUrl: payload.UserImageUrl || "",
-        isNotificationEnabled: payload.IsNotificationEnabled === "true",
-        permissions: Array.isArray(payload.permission)
-          ? payload.permission
-          : [payload.permission].filter(Boolean),
-      };
-    } catch (error) {
-      console.error("Failed to parse token:", error);
-      return null;
-    }
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return {
+      userId: payload.sub || payload["nameid"] || "",
+      fullName: payload.Name || "",
+      firstName: payload.FirstName || "",
+      lastName: payload.LastName || "",
+      email: payload.email || "",
+      phone: payload.Phone || "",
+      role: payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || payload.role || "",
+      branchId: payload.BranchId || "",
+      userImageUrl: payload.UserImageUrl || "",
+      isNotificationEnabled: payload.IsNotificationEnabled === "true",
+      permissions: Array.isArray(payload.permission)
+        ? payload.permission
+        : typeof payload.permission === "string"
+          ? [payload.permission]
+          : [],
+    };
+  } catch (error) {
+    console.error("Failed to parse token:", error);
+    return null;
   }
-  
+}
 
 export function isAdmin(): boolean {
   const user = getUserFromToken();
@@ -52,8 +53,6 @@ export function hasPermission(permission: string): boolean {
   return user?.permissions.includes(permission) || false;
 }
 
-// ✅ الآن نعمل لها export صريح
 export function useUser(): UserInfo | null {
-  const user = useMemo(() => getUserFromToken(), []);
-  return user;
+  return useMemo(() => getUserFromToken(), []);
 }
