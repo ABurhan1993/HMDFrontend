@@ -65,20 +65,22 @@ const handleSubmit = async (e: React.FormEvent) => {
   ) {
     return; // في نقص بالفورم
   }
-
+  
   try {
     await axios.post("/customer/create", {
       ...formData,
       contactStatus: Number(formData.contactStatus),
       wayOfContact: Number(formData.wayOfContact),
     });
-
+  
     setFormData({ ...initialFormState });
     onSuccess();
     onClose();
-  } catch (err) {
-    toast.error("Failed to add customer.");
-  }
+  } catch (err: any) {
+    const errorMessage =
+      err.response?.data?.title || err.response?.data?.message || err.message || "Failed to add customer.";
+    toast.error(errorMessage);
+  }  
 };
 
 
