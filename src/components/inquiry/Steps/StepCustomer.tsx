@@ -49,7 +49,7 @@ const StepCustomer = ({ data, setData, users = [] }: Props) => {
       }
     };
 
-    if (data.customerContact.startsWith("971") && data.customerContact.length === 12) {
+    if ( data.customerContact.length === 10) {
       fetchCustomerByPhone();
     }
   }, [data.customerContact]);
@@ -61,7 +61,7 @@ const StepCustomer = ({ data, setData, users = [] }: Props) => {
           name="customerContact"
           value={data.customerContact}
           onChange={(e) => setData((prev: any) => ({ ...prev, customerContact: e.target.value }))}
-          placeholder="Customer Number e.g. 971555555555"
+          placeholder="Customer Number e.g. 0555555555"
           required
         />
         <Input

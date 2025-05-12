@@ -79,8 +79,7 @@ const AddInquiryForm = ({ isOpen, onClose, onSuccess }: any) => {
       case 0:
         return (
           formData.customerName.trim() &&
-          formData.customerContact.trim().startsWith("971") &&
-          formData.customerContact.trim().length === 12
+          formData.customerContact.trim().length === 10
         );
       case 1:
         return (

@@ -1,7 +1,13 @@
 import { useState } from "react";
-import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  ClockIcon,
+  ChatBubbleOvalLeftEllipsisIcon,
+} from "@heroicons/react/24/outline";
+
 import { CustomPagination } from "@/components/ui/Pagination/CustomPagination";
-import { useUser } from "@/hooks/useUser"; // ✅ نضيفه
+import { useUser } from "@/hooks/useUser";
 import type { Inquiry } from "@/types/inquiry";
 import { Fragment } from "react";
 
@@ -38,7 +44,7 @@ export default function InquiryTable({
   setCurrentPage,
 }: InquiryTableProps) {
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
-  const user = useUser(); // ✅
+  const user = useUser();
 
   const handleExpand = (id: number) => {
     setExpandedRow((prev) => (prev === id ? null : id));
@@ -49,7 +55,6 @@ export default function InquiryTable({
   return (
     <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
       <div className="flex items-center justify-between flex-wrap md:flex-row space-y-4 md:space-y-0 pb-4 bg-white dark:bg-gray-900 px-4">
-        {/* 🔥 نعرض زر New Inquiry بس للي معه صلاحية Create */}
         {user?.permissions.includes("Permissions.Inquiries.Create") && (
           <button
             onClick={onAddClick}
@@ -76,12 +81,13 @@ export default function InquiryTable({
             <th className="px-6 py-3">Status</th>
             <th className="px-6 py-3">Start Date</th>
             <th className="px-6 py-3">Workscopes</th>
+            <th className="px-6 py-3">Action</th>
           </tr>
         </thead>
         <tbody>
           {paginated.length === 0 ? (
             <tr>
-              <td colSpan={6} className="text-center py-6 text-gray-400 dark:text-gray-500">
+              <td colSpan={7} className="text-center py-6 text-gray-400 dark:text-gray-500">
                 No inquiries found.
               </td>
             </tr>
@@ -110,11 +116,33 @@ export default function InquiryTable({
                   <td className="px-6 py-4">
                     {i.workscopeNames?.length > 0 ? i.workscopeNames.join(", ") : "-"}
                   </td>
+                  <td className="px-6 py-4 space-x-2" onClick={(e) => e.stopPropagation()}>
+                     <button
+      className="text-blue-500 hover:text-blue-600"
+      title="Reschedule"
+      onClick={(e) => {
+        e.stopPropagation();
+       // onRescheduleClick(i); // افترض أنك عامل الدالة
+      }}
+    >
+      <ClockIcon className="w-5 h-5" />
+    </button>
+                    <button
+      className="text-green-500 hover:text-green-600"
+      title="Comments"
+      onClick={(e) => {
+        e.stopPropagation();
+        //onCommentClick(i);
+      }}
+    >
+      <ChatBubbleOvalLeftEllipsisIcon className="w-5 h-5" />
+    </button>
+                  </td>
                 </tr>
 
                 {expandedRow === i.inquiryId && (
                   <tr className="bg-gray-50 dark:bg-gray-700">
-                    <td colSpan={6} className="px-6 py-6">
+                    <td colSpan={7} className="px-6 py-6">
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <DetailsCard title="Customer">
                           <Info label="Email" value={i.customerEmail} />

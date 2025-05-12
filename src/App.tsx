@@ -24,6 +24,8 @@ import UserList from "@/pages/Users/UserList";
 import InquiryList from "./pages/Inquiry/InquiryList";
 import "react-datepicker/dist/react-datepicker.css";
 import RoleList from "@/pages/Roles/RoleList";
+import MeasurementAssignmentRequests from "@/pages/measurement/MeasurementAssignmentRequests";
+
 
 export default function App() {
   return (
@@ -51,6 +53,9 @@ export default function App() {
             <Route path="/users" element={<UserList />} />
             <Route path="/inquiries" element={<InquiryList />} />
             <Route path="/roles" element={<RoleList />} />
+            <Route path="/measurement/assignment-requests" element={<MeasurementAssignmentRequests />} />
+
+
           </Route>
         </Route>
 

@@ -7,6 +7,7 @@ import {
   UserCircleIcon,
   PlugInIcon,
   DocsIcon,
+  RulerIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import { useUser } from "@/hooks/useUser";
@@ -29,6 +30,21 @@ const navItems = [
     subItems: [{ name: "Inquiry List", path: "/inquiries", pro: false, requiredPermission: "Permissions.Inquiries.View" }],
   },
   {
+    icon: <RulerIcon />,
+    name: "Measurement",
+    subItems: [
+      {
+        name: "Assignment Requests",
+        path: "/measurement/assignment-requests",
+        pro: false,
+        requiredPermission: "Permissions.Measurements.View",
+      },
+      // ممكن نضيف لاحقًا:
+      // { name: "Measurement Tasks", path: "/measurement/tasks", requiredPermission: ... },
+      // { name: "Approval", path: "/measurement/approval", requiredPermission: ... },
+    ],
+  },
+  {
     icon: <PlugInIcon />,
     name: "Settings",
     subItems: [
@@ -36,6 +52,7 @@ const navItems = [
       { name: "Role List", path: "/roles", pro: false, requiredPermission: "Permissions.Roles.View" },
     ],
   },
+  
 ];
 
 const AppSidebar: React.FC = () => {
