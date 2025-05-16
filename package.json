@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@daveyplate/tailwind-drag-dropzone": "^1.0.6",
-    "@dropzone-ui/react": "^7.0.4",
     "@fullcalendar/core": "^6.1.15",
     "@fullcalendar/daygrid": "^6.1.17",
     "@fullcalendar/interaction": "^6.1.17",
