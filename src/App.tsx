@@ -25,6 +25,8 @@ import InquiryList from "./pages/Inquiry/InquiryList";
 import "react-datepicker/dist/react-datepicker.css";
 import RoleList from "@/pages/Roles/RoleList";
 import MeasurementAssignmentRequests from "@/pages/measurement/MeasurementAssignmentRequests";
+import MyMeasurements from "./pages/measurement/MyMeasurement";
+import MeasurementApprovalList from "@/pages/measurement/MeasurementApprovalList";
 
 
 export default function App() {
@@ -54,6 +56,8 @@ export default function App() {
             <Route path="/inquiries" element={<InquiryList />} />
             <Route path="/roles" element={<RoleList />} />
             <Route path="/measurement/assignment-requests" element={<MeasurementAssignmentRequests />} />
+            <Route path="/measurement/my-measurements" element={<MyMeasurements />} />
+            <Route path="/measurement/approvals" element={<MeasurementApprovalList />} />
 
 
           </Route>

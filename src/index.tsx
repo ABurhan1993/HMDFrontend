@@ -7,6 +7,8 @@ import { SidebarProvider } from "./context/SidebarContext";
 //import reportWebVitals from "./reportWebVitals";
 import { HelmetProvider } from "react-helmet-async"; 
 import 'tw-elements';
+import "@daveyplate/tailwind-drag-dropzone/dist/style.css";
+
 // ✅ اضفناها
 
 const root = ReactDOM.createRoot(document.getElementById("root")!);

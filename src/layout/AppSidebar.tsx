@@ -39,11 +39,21 @@ const navItems = [
         pro: false,
         requiredPermission: "Permissions.Measurements.View",
       },
-      // ممكن نضيف لاحقًا:
-      // { name: "Measurement Tasks", path: "/measurement/tasks", requiredPermission: ... },
-      // { name: "Approval", path: "/measurement/approval", requiredPermission: ... },
+      {
+        name: "My Measurements",
+        path: "/measurement/my-measurements",
+        pro: false,
+        requiredPermission: "Permissions.Measurements.View",
+      },
+      {
+        name: "Measurement Approvals",
+        path: "/measurement/approvals",
+        pro: false,
+        requiredPermission: "Permissions.Measurements.Approve",
+      },
     ],
   },
+
   {
     icon: <PlugInIcon />,
     name: "Settings",
@@ -52,7 +62,7 @@ const navItems = [
       { name: "Role List", path: "/roles", pro: false, requiredPermission: "Permissions.Roles.View" },
     ],
   },
-  
+
 ];
 
 const AppSidebar: React.FC = () => {
@@ -97,9 +107,8 @@ const AppSidebar: React.FC = () => {
 
   return (
     <aside
-      className={`fixed mt-16 flex flex-col top-0 px-5 left-0 bg-white dark:bg-gray-900 text-gray-900 dark:text-white h-screen transition-all duration-300 z-50 border-r border-gray-200 dark:border-gray-700 ${
-        isExpanded || isHovered || isMobileOpen ? "w-[290px]" : "w-[90px]"
-      } ${isMobileOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
+      className={`fixed mt-16 flex flex-col top-0 px-5 left-0 bg-white dark:bg-gray-900 text-gray-900 dark:text-white h-screen transition-all duration-300 z-50 border-r border-gray-200 dark:border-gray-700 ${isExpanded || isHovered || isMobileOpen ? "w-[290px]" : "w-[90px]"
+        } ${isMobileOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
       onMouseEnter={() => !isExpanded && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -144,9 +153,8 @@ const AppSidebar: React.FC = () => {
                     <>
                       <span>{nav.name}</span>
                       <ChevronDownIcon
-                        className={`ml-auto w-5 h-5 transition-transform ${
-                          openSubmenu?.index === index ? "rotate-180 text-brand-500" : ""
-                        }`}
+                        className={`ml-auto w-5 h-5 transition-transform ${openSubmenu?.index === index ? "rotate-180 text-brand-500" : ""
+                          }`}
                       />
                     </>
                   )}
@@ -166,9 +174,8 @@ const AppSidebar: React.FC = () => {
                       <li key={subItem.name}>
                         <Link
                           to={subItem.path}
-                          className={`block py-1 text-gray-600 dark:text-gray-300 hover:text-brand-500 ${
-                            isActive(subItem.path) ? "text-brand-500 font-bold" : ""
-                          }`}
+                          className={`block py-1 text-gray-600 dark:text-gray-300 hover:text-brand-500 ${isActive(subItem.path) ? "text-brand-500 font-bold" : ""
+                            }`}
                         >
                           {subItem.name}
                         </Link>
