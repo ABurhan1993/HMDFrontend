@@ -3,6 +3,8 @@ import axios from "@/components/utils/axios";
 import MeasurementApprovalModal from "@/components/measurement/MeasurementApprovalModal";
 import MeasurementApprovalTable from "@/components/measurement/MeasurementApprovalTable";
 import type { FullInquiry } from "@/types/inquiry-with-tasks";
+import PageMeta from "@/components/common/PageMeta";
+import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 
 export default function MeasurementApprovalList() {
   const [inquiries, setInquiries] = useState<FullInquiry[]>([]);
@@ -24,8 +26,10 @@ export default function MeasurementApprovalList() {
 
   return (
     <>
-      <div className="p-4">
+      <div className="p-4 space-y-6">
         <h1 className="text-xl font-bold mb-4">Measurement Approval</h1>
+        <PageMeta title="Measurement Approval" description="List of all Measurement Approvals " />
+      <PageBreadcrumb pageTitle="Measurement Approval" />
         <MeasurementApprovalTable
           data={inquiries}
           currentPage={currentPage}

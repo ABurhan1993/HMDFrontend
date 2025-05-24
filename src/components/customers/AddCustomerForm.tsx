@@ -119,12 +119,12 @@ const handleSubmit = async (e: React.FormEvent) => {
   
             <div className="grid md:grid-cols-2 md:gap-6">
               <div>
-                <Input name="customerContact" value={formData.customerContact} onChange={handleChange} placeholder="Phone e.g. 971555555555" />
+                <Input name="customerContact" value={formData.customerContact} onChange={handleChange} placeholder="Phone e.g. 0555555555" />
                 {formSubmitted && !formData.customerContact && (
                   <p className="text-red-500 text-sm mt-1">Phone number is required</p>
                 )}
               </div>
-              <Input name="customerWhatsapp" value={formData.customerWhatsapp} onChange={handleChange} placeholder="Whatsapp e.g. 971555555555" />
+              <Input name="customerWhatsapp" value={formData.customerWhatsapp} onChange={handleChange} placeholder="Whatsapp e.g. 0555555555" />
             </div>
   
             <div className="grid md:grid-cols-2 md:gap-6">
