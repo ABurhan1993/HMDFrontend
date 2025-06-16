@@ -57,9 +57,6 @@ const AppHeader: React.FC = () => {
           <div className="flex items-center gap-2 2xsm:gap-3">
             <ThemeToggleButton />
             <NotificationDropdown />
-            <span className="hidden sm:inline-block text-sm font-medium text-gray-700 dark:text-gray-200">
-              {user?.firstName} {user?.lastName}
-            </span>
           </div>
           <UserDropdown />
         </div>
